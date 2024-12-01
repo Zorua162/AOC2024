@@ -2,7 +2,7 @@
 
 ## Plan
 
-Get as far in AOC 2024 as I can, using methods I've learned throughout the year, like
+Get as far in AOC 2024 as I can, to learn how much I have improved during the year.
 
 ## Template
 
