@@ -17,7 +17,7 @@ template/
 
 ### Day generation
 
-Things that need updating in each template:
+Things that are updated in each template:
 
 - Copy template folder
 - Rename it to the current day name (for example dayx)
