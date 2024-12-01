@@ -1,4 +1,4 @@
-# Zorua162's Advent of code 2023
+# Zorua162's Advent of code 2024
 
 ## Plan
 
