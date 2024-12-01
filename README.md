@@ -1,5 +1,8 @@
 # Zorua162's Advent of code 2024
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
+
 ## Plan
 
 Get as far in AOC 2024 as I can, to learn how much I have improved during the year.
