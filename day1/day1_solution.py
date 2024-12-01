@@ -42,6 +42,20 @@ def find_diffs(lists: list[list[int]]) -> int:
     return total_diff
 
 
+def calculate_similarity(lists: list[list[int]]) -> int:
+    """For each number in the left list, calculate similarity of right list
+    This is done by counting and multiplying by the number of occurrences of this number
+    in the right list
+    """
+    total = 0
+    listr = lists[1]
+    for i in lists[0]:
+        count = listr.count(i)
+        total += i * count
+
+    return total
+
+
 def part1(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
@@ -55,11 +69,12 @@ def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
     print_grid(data)
-    return 0
+    lists = create_lists(data)
+    return calculate_similarity(lists)
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part2_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/part1_example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))
