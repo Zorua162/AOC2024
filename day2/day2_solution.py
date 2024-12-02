@@ -84,7 +84,7 @@ def check_safe(comp, numbers: list[int]) -> tuple[int, bool]:
             return i, False
         current_num = next_number
     print("Increasing safe")
-    return None, True
+    return None, True  # type: ignore
 
 
 def check_index_removed_safe(
