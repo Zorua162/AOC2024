@@ -1,5 +1,4 @@
 from day3.day3_solution import part1, part2
-import pytest
 
 current_day = "day3"
 
