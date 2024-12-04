@@ -36,7 +36,74 @@ def find_vertical(data: list[str]) -> int:
 # 3 G H I
 
 
+def get_lr_diag_hori(start: int, data: list[str]) -> str:
+    locs = zip(
+        [i for i in range(start, len(data))], [i for i in range(0, len(data[0]))]
+    )
+
+    current = ""
+    for i, j in locs:
+        current += data[j][i]
+
+    return current
+
+
+def get_lr_diag_vert(start: int, data: list[str]) -> str:
+    locs = zip(
+        [i for i in range(0, len(data))], [i for i in range(start, len(data[0]))]
+    )
+
+    current = ""
+    for i, j in locs:
+        current += data[j][i]
+
+    return current
+
+
+def get_rl_diag_hori(start: int, data: list[str]) -> str:
+    locs = zip(
+        [i for i in range(len(data) - 1 - start, -1, -1)],
+        [i for i in range(0, len(data[0]))],
+    )
+
+    current = ""
+    for i, j in locs:
+        print(f"{i = }, {j = }")
+        current += data[j][i]
+
+    return current
+
+
+def get_rl_diag_vert(start: int, data: list[str]) -> str:
+    locs = zip(
+        [i for i in range(len(data) - 1, -1, -1)],
+        [i for i in range(start, len(data[0]))],
+    )
+
+    current = ""
+    for i, j in locs:
+        current += data[j][i]
+
+    return current
+
+
 def find_diagonal(data: list[str]) -> int:
+    # left-right
+
+    diagonals = []
+    for i in range(0, len(data[0])):
+        diagonals.append(get_lr_diag_hori(i, data))
+        diagonals.append(get_rl_diag_hori(i, data))
+        if i != 0:
+            diagonals.append(get_lr_diag_vert(i, data))
+            diagonals.append(get_rl_diag_vert(i, data))
+
+    print(diagonals)
+
+    return find_words(diagonals)
+
+
+def find_diagonal_old(data: list[str]) -> int:
     diagonal_lines = defaultdict(lambda: [])
     for vert_offset in range(-len(data[0]), len(data)):
         for i in range(len(data[0])):
@@ -72,11 +139,23 @@ def part1(data_path: str) -> int:
 
     count = 0
 
-    count += find_words(data)
+    horiz = find_words(data)
 
-    count += find_vertical(data)
+    print(f"{horiz = }")
 
-    count += find_diagonal(data)
+    count += horiz
+
+    vert = find_vertical(data)
+
+    print(f"{vert = }")
+
+    count += vert
+
+    diag = find_diagonal(data)
+
+    print(f"{diag = }")
+
+    count += diag
 
     return count
 
@@ -89,9 +168,9 @@ def part2(data_path: str) -> int:
 
 
 if __name__ == "__main__":
-    print(part1(f"{current_day}/part1_example_data.txt"))
+    # print(part1(f"{current_day}/part1_example_data.txt"))
     # print(part1(f"{current_day}/part1_example_data2.txt"))
-    # print(part1(f"{current_day}/data.txt"))
+    print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part2_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
 
