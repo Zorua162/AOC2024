@@ -160,18 +160,46 @@ def part1(data_path: str) -> int:
     return count
 
 
+def interrogate_xmas(data: list[str], i: int, j: int) -> bool:
+    """Look at 3x3 centered on i, j and see if it matches X-MAS"""
+
+    patterns = ["MMSS", "SSMM", "SMMS", "MSSM"]
+
+    if data[j][i] == "A":
+        for pattern in patterns:
+            if (
+                data[j - 1][i - 1] == pattern[0]
+                and data[j - 1][i + 1] == pattern[1]
+                and data[j + 1][i + 1] == pattern[2]
+                and data[j + 1][i - 1] == pattern[3]
+            ):
+                return True
+
+    return False
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
     print_grid(data)
-    return 0
+    # Plan is to look at each 3x3 section of the grid and see if it matches an X-MAS
+
+    count = 0
+
+    for i in range(1, len(data[0]) - 1):
+        for j in range(1, len(data) - 1):
+            if interrogate_xmas(data, i, j):
+                count += 1
+
+    return count
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
     # print(part1(f"{current_day}/part1_example_data2.txt"))
-    print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part2_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/data.txt"))
 
+# Part 1
 # 2607 Too high
