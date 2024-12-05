@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Optional
 from math import floor
 
 current_day = "day5"
@@ -28,7 +29,9 @@ def find_mid(group: list[int]) -> int:
     return group[index]
 
 
-def check_valid(rules: dict[int, list[int]], group: list[int]) -> bool:
+def check_valid(
+    rules: dict[int, list[int]], group: list[int]
+) -> tuple[bool, Optional[int]]:
     valid_rule = True
     for i, val in enumerate(group):
         valid_after = rules[val]
@@ -36,11 +39,12 @@ def check_valid(rules: dict[int, list[int]], group: list[int]) -> bool:
 
         if not check_rest_of_group_in_valid(valid_after, group[i + 1 :]):
             valid_rule = False
+            return valid_rule, val
 
-    return valid_rule
+    return valid_rule, None
 
 
-def part1(data_path: str) -> int:
+def parse_day5(data_path: str) -> tuple[dict[int, list[int]], list[list[int]]]:
     with open(data_path, "r") as f_obj:
         # data = [line for line in f_obj.read().split("\n") if line != ""]
         data = f_obj.read()
@@ -60,6 +64,12 @@ def part1(data_path: str) -> int:
         if nums != ""
     ]
 
+    return rules, groups
+
+
+def part1(data_path: str) -> int:
+    rules, groups = parse_day5(data_path)
+
     print(f"{rules = }, {groups = }")
 
     count = 0
@@ -67,7 +77,7 @@ def part1(data_path: str) -> int:
     # groups = [groups[0]]
 
     for group in groups:
-        valid = check_valid(rules, group)
+        valid, _ = check_valid(rules, group)
         print(f"{group = } {valid = }")
         if valid:
             mid = find_mid(group)
@@ -76,11 +86,48 @@ def part1(data_path: str) -> int:
     return count
 
 
+def find_correct_order(rules: dict[int, list[int]], group: list[int]) -> list[int]:
+    valid = False
+
+    while not valid:
+        print(f"Attempting new group {group} with rules {rules}")
+
+        _, incorrect_val = check_valid(rules, group)
+
+        # Move incorrect val back one and try again
+
+        print(f"{incorrect_val = }")
+
+        if incorrect_val is None:
+            return group
+
+        incorrect_index = group.index(incorrect_val)
+
+        val = group.pop(incorrect_index)
+
+        # group.insert(0, val)
+
+        group.insert(len(group), val)
+
+        # group.insert(incorrect_index + 1, val)
+
+    return group
+
+
 def part2(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+    rules, groups = parse_day5(data_path)
+
+    count = 0
+
+    for group in groups:
+        valid, _ = check_valid(rules, group)
+        print(f"{group = } {valid = }")
+        if not valid:
+            group = find_correct_order(rules, group)
+            mid = find_mid(group)
+            count += mid
+
+    return count
 
 
 if __name__ == "__main__":
