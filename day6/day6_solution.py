@@ -11,14 +11,14 @@ def print_grid(grid: list[str]):
 def print_to_file(data: list[str]):
     with open(f"{current_day}/printed.txt", "w") as f_out:
         for line in data:
-            f_out.write(line)
+            f_out.write(line + "\n")
 
 
 def find_initial_pos(data: list[str]) -> tuple[Optional[int], Optional[int]]:
     for j, line in enumerate(data):
         for i, val in enumerate(line):
             if val == "^":
-                print(f"{i}, {j}")
+                # print(f"{i}, {j}")
                 return i, j
     return None, None
 
@@ -50,10 +50,13 @@ def find_next_obstruction(
         i += direction[0]
         j += direction[1]
 
+        if i < 0 or j < 0:
+            return data, None, None, steps, rotate(direction)
+
         try:
-            print(f"{i}, {j}, {data[j][i]}")
+            # print(f"{i}, {j}, {data[j][i]}")
             if data[j][i] == "#":
-                print("Found #")
+                # print("Found #")
                 blocked = True
                 break
         except IndexError:
@@ -63,7 +66,6 @@ def find_next_obstruction(
         line = list(data[j])
         line[i] = "X"
         data[j] = "".join(line)
-        print(data)
 
     return data, i - direction[0], j - direction[1], steps, rotate(direction)
 
@@ -83,19 +85,27 @@ def part1(data_path: str) -> int:
     count = 0
 
     while True:
-        print(f"Starting new direction {current_direction}")
 
         data, i, j, steps_taken, current_direction = find_next_obstruction(
             data, i, j, current_direction
         )
-        print_grid(data)
+        print(f"Starting new direction {current_direction}, {i}, {j}")
+        # print_grid(data)
+        print_to_file(data)
 
         count += steps_taken
 
         if i is None or j is None:
             break
 
-    return count
+    location_count = 0
+
+    for line in data:
+        for loc in line:
+            if loc == "X":
+                location_count += 1
+
+    return location_count
 
 
 def part2(data_path: str) -> int:
@@ -106,7 +116,7 @@ def part2(data_path: str) -> int:
 
 
 if __name__ == "__main__":
-    print(part1(f"{current_day}/part1_example_data.txt"))
-    # print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/part1_example_data.txt"))
+    print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part2_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
