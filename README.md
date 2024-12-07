@@ -2,7 +2,6 @@
 
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
-
 ## Plan
 
 Get as far in AOC 2024 as I can, to learn how much I have improved during the year.
@@ -66,8 +65,16 @@ are commited.
 
 - trailing whitespace: Remove whitespace
 
-
-
 ### Pre-commit automation
 
 Pre-commit.ci automatically runs these checks as an action on Github
+
+## Notes on improvements
+
+### Day 7
+
+Ended up using sub-optimal solution for part2, but optimized it enoough that it could
+solve the answer in a not unreasonable amount of time.
+
+If I have spare time in the future (I probably won't), then I would like to implement
+a more optimal solution.
