@@ -108,7 +108,7 @@ def part1(data_path: str) -> int:
     return location_count
 
 
-def check_loop(data: list[str], i: int, j: int, direction: tuple[int, int]) -> bool:
+def check_loop(data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]) -> bool:
     """Check if this obstruction meets the criteria that a loop could be created
 
     These are:
@@ -134,16 +134,16 @@ def check_loop(data: list[str], i: int, j: int, direction: tuple[int, int]) -> b
         data, i_two, j_two, direction_two
     )
 
-    if steps_three < steps_one:
-        print(f"Failed steps {steps_three = } {steps_one = }")
-        return False
+    # if steps_three > steps:
+    #     print(f"Failed steps {steps_three = } {steps_one = }")
+    #     return False
 
-    clear_direction = rotate(direction)
-    for _ in range(steps_two):
+    clear_direction = rotate(direction_three)
+    for _ in range(steps_one):
         i += clear_direction[0]
         j += clear_direction[1]
-        if data[j][i] != '.':
-            print("Failed blocked")
+        if data[j][i] == '#' or data[j][i] == '^':
+            print(f"Failed blocked {i = }, {j = } {data[j][i]}")
             return False
 
     return True
@@ -164,7 +164,7 @@ def part2(data_path: str) -> int:
 
     while True:
 
-        data, i, j, _, current_direction = find_next_obstruction(
+        data, i, j, steps, current_direction = find_next_obstruction(
             data, i, j, current_direction
         )
 
@@ -173,7 +173,7 @@ def part2(data_path: str) -> int:
         if i is None or j is None:
             break
 
-        if check_loop(data, i, j, current_direction):
+        if check_loop(data, i, j, steps, current_direction):
             count += 1
 
     return count
