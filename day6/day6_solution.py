@@ -165,6 +165,22 @@ def check_loop(
     edit_data(loop_data, i, j, "O")
     print_to_file(loop_data, name=f"loops/loop{i}-{j}.txt")
     print("Loop found")
+    # data, i_three, j_three, steps_three, direction_three = find_next_obstruction(
+    #     data, i_two, j_two, direction_two
+    # )
+
+    # if steps_three < steps_one:
+    #     print(f"Failed steps {steps_three = } {steps_one = }")
+    #     return False
+
+    # clear_direction = rotate(direction)
+    # for _ in range(steps_two):
+    #     i += clear_direction[0]
+    #     j += clear_direction[1]
+    #     if data[j][i] != '.':
+    #         print("Failed blocked")
+    #         return False
+
     return True
 
 
