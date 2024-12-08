@@ -109,9 +109,13 @@ def part2(data_path: str) -> int:
         #     continue
 
         for operators in product(["*", "+", "||"], repeat=num_operators):
-            possible_out.append(
-                solve_equation_smart(operators, input_numbers, goal_number)
+            current_solution = solve_equation_smart(
+                operators, input_numbers, goal_number
             )
+            possible_out.append(current_solution)
+            if current_solution == goal_number:
+                print("Found answer, so going to next!")
+                break
 
         if goal_number in possible_out:
             # print(f"Valid number {goal_number} {possible_out}")
