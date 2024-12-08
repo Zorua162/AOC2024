@@ -9,7 +9,7 @@ def print_grid(grid: list[str]):
 def print_to_file(data: list[str]):
     with open(f"{current_day}/printed.txt", "w") as f_out:
         for line in data:
-            f_out.write(line)
+            f_out.write(line + "\n")
 
 
 def part1(data_path: str) -> int:
