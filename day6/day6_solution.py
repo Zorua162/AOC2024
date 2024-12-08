@@ -185,7 +185,13 @@ def check_loop(
 
 
 def part2(data_path: str) -> int:
-    """From example, sltn order is 1, 2, 4, """
+    """From example, sltn order is
+    1-8: 4
+    3-6: 1
+    3-7: 2
+    7-7: 3
+    7-9: 6
+    """
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
 
