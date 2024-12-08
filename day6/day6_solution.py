@@ -8,8 +8,8 @@ def print_grid(grid: list[str]):
         print(line)
 
 
-def print_to_file(data: list[str]):
-    with open(f"{current_day}/printed.txt", "w") as f_out:
+def print_to_file(data: list[str], name="printed.txt"):
+    with open(f"{current_day}/{name}", "w") as f_out:
         for line in data:
             f_out.write(line + "\n")
 
@@ -37,14 +37,24 @@ def rotate(direction: tuple[int, int]) -> tuple[int, int]:
     raise Exception("Impossible set of i ,j")
 
 
+def edit_data(data: list[str], i: int, j: int, mark: str) -> list[str]:
+    """Put a value into a location in data"""
+    if data[j][i] == "#":
+        mark = "+"
+    line = list(data[j])
+    line[i] = mark
+    data[j] = "".join(line)
+    return data
+
+
 def find_next_obstruction(
-    data: list[str], i: int, j: int, direction: tuple[int, int]
+    data: list[str], i: int, j: int, direction: tuple[int, int], marker: str
 ) -> tuple[list[str], Optional[int], Optional[int], int, tuple[int, int]]:
     # Step in direction up until finding either a # or outside of the index of data
 
     blocked = False
 
-    steps = 0
+    steps = 1
 
     while not blocked:
         i += direction[0]
@@ -63,9 +73,7 @@ def find_next_obstruction(
             blocked = True
             return data, None, None, steps, rotate(direction)
         steps += 1
-        line = list(data[j])
-        line[i] = "X"
-        data[j] = "".join(line)
+        edit_data(data, i, j, marker)
 
     return data, i - direction[0], j - direction[1], steps, rotate(direction)
 
@@ -87,7 +95,7 @@ def part1(data_path: str) -> int:
     while True:
 
         data, i, j, steps_taken, current_direction = find_next_obstruction(
-            data, i, j, current_direction
+            data, i, j, current_direction, "X"
         )
         print(f"Starting new direction {current_direction}, {i}, {j}")
         print_grid(data)
@@ -108,48 +116,60 @@ def part1(data_path: str) -> int:
     return location_count
 
 
-def check_loop(data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]) -> bool:
+def check_loop(
+    data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]
+) -> bool:
     """Check if this obstruction meets the criteria that a loop could be created
 
     These are:
-     - Third next obstruction steps less than first obstruction
      - Nothing blocking steps to get back
     """
 
-    data, i_one, j_one, steps_one, direction_one = find_next_obstruction(
-        data, i, j, direction
+    print(f"Started at {i = } {j = }")
+
+    loop_data = data.copy()
+
+    loop_data, i_one, j_one, steps_one, direction_one = find_next_obstruction(
+        loop_data, i, j, direction, "1"
     )
 
     if i_one is None or j_one is None:
         return False
 
-    data, i_two, j_two, steps_two, direction_two = find_next_obstruction(
-        data, i_one, j_one, direction_one
+    loop_data, i_two, j_two, steps_two, direction_two = find_next_obstruction(
+        loop_data, i_one, j_one, direction_one, "2"
     )
 
     if i_two is None or j_two is None:
         return False
 
-    data, i_three, j_three, steps_three, direction_three = find_next_obstruction(
-        data, i_two, j_two, direction_two
-    )
-
     # if steps_three > steps:
     #     print(f"Failed steps {steps_three = } {steps_one = }")
     #     return False
 
-    clear_direction = rotate(direction_three)
+    clear_direction = direction_two
+    j = j_two
+    i = i_two
     for _ in range(steps_one):
         i += clear_direction[0]
         j += clear_direction[1]
-        if data[j][i] == '#' or data[j][i] == '^':
-            print(f"Failed blocked {i = }, {j = } {data[j][i]}")
+        if i < 0 or j < 0 or i > len(data[0]) - 1 or j > len(data) - 1:
+            print(f"Failed out of range {i = }, {j = }")
             return False
-
+        loc = data[j][i]
+        edit_data(loop_data, i, j, "=")
+        print_to_file(loop_data)
+        if loc == "#":  # or loc == "^":
+            print(f"Failed blocked {i = }, {j = } {loc}")
+            return False
+    edit_data(loop_data, i, j, "O")
+    print_to_file(loop_data, name=f"loops/loop{i}-{j}.txt")
+    print("Loop found")
     return True
 
 
 def part2(data_path: str) -> int:
+    """From example, sltn order is 1, 2, 4, """
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
 
@@ -164,8 +184,15 @@ def part2(data_path: str) -> int:
 
     while True:
 
+        mark = "X"
+
+        if current_direction[0] != 0:
+            mark = "-"
+        else:
+            mark = "|"
+
         data, i, j, steps, current_direction = find_next_obstruction(
-            data, i, j, current_direction
+            data, i, j, current_direction, mark
         )
 
         print(f"{i = } {j = } {count = }")
@@ -175,6 +202,7 @@ def part2(data_path: str) -> int:
 
         if check_loop(data, i, j, steps, current_direction):
             count += 1
+            print(f"Current loop count is {count = }")
 
     return count
 
