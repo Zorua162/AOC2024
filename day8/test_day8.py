@@ -1,5 +1,4 @@
 from day8.day8_solution import part1, part2
-import pytest
 
 current_day = "day8"
 
@@ -14,13 +13,11 @@ def test_part1_data_output():
     assert 381 == output
 
 
-@pytest.mark.skip("Part 2 not started yet")
 def test_part2_example_data_output() -> None:
     output: int = part2(f"{current_day}/part1_example_data.txt")
     assert 34 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert 1184 == output
