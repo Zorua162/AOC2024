@@ -234,3 +234,5 @@ if __name__ == "__main__":
     # print(part1(f"{current_day}/data.txt"))
     print(part2(f"{current_day}/part1_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
+
+# 66: Not the right answer
