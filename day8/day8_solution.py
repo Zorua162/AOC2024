@@ -65,18 +65,17 @@ def edit_data(data: list[str], antinode: AntiNode, mark: str) -> list[str]:
     return data
 
 
+def is_inside(x: int, y: int, data: list[str]) -> bool:
+    return x >= 0 and y >= 0 and x < len(data[0]) and y < len(data)
+
+
 def check_antinode_in_grid(
     antinodes: list[AntiNode], data: list[str]
 ) -> tuple[list[AntiNode], list[str]]:
 
     out_antinodes = []
     for antinode in antinodes:
-        if (
-            antinode.x >= 0
-            and antinode.y >= 0
-            and antinode.x < len(data[0])
-            and antinode.y < len(data)
-        ):
+        if is_inside(antinode.x, antinode.y, data):
             data = edit_data(data, antinode, "#")
             out_antinodes.append(antinode)
 
@@ -84,7 +83,7 @@ def check_antinode_in_grid(
 
 
 def find_antinodes(
-    nodes: list[Node], data: list[str]
+    nodes: list[Node], data: list[str], part: int
 ) -> tuple[list[AntiNode], list[str]]:
     """Determine the number of lines, determine the lines, find the"""
 
@@ -109,22 +108,58 @@ def find_antinodes(
         diff_y = node_1.y - node_2.y
 
         # Todo: determine if antinodes are in the bounds of the grid
-        antinodes = [
-            AntiNode(node_1.x + diff_x, node_1.y + diff_y),
-            AntiNode(node_2.x - diff_x, node_2.y - diff_y),
-        ]
+        if part == 1:
+            antinodes = [
+                AntiNode(node_1.x + diff_x, node_1.y + diff_y),
+                AntiNode(node_2.x - diff_x, node_2.y - diff_y),
+            ]
+        else:
+            antinodes = get_part2_antinodes(node_1, node_2, diff_x, diff_y, data)
 
         valid_antinodes, data = check_antinode_in_grid(antinodes, data)
+
         antinodes.extend(valid_antinodes)
 
     return antinodes, data
 
 
-def part1(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
+def find_harmonics(
+    node: Node, diff_x: int, diff_y: int, data: list[str]
+) -> list[AntiNode]:
 
+    outside = False
+
+    antinodes = []
+    x = node.x
+    y = node.y
+    n = 0
+    while not outside:
+        this_x = x + n * diff_x
+        this_y = y + n * diff_y
+        print(f"Attempting {this_x = } {this_y = }")
+        if not is_inside(this_x, this_y, data):
+            break
+        antinodes.append(AntiNode(this_x, this_y))
+
+        n += 1
+
+    return antinodes
+
+
+def get_part2_antinodes(
+    node_1: Node, node_2: Node, diff_x: int, diff_y, data: list[str]
+) -> list[AntiNode]:
+    # node_1 and node_2 are antinodes, and then do a while in each's direction until
+    # they are outside of data
+    antinodes = [AntiNode(node_1.x, node_1.y), AntiNode(node_2.x, node_2.y)]
+
+    antinodes.extend(find_harmonics(node_1, diff_x, diff_y, data))
+    antinodes.extend(find_harmonics(node_2, -diff_x, -diff_y, data))
+
+    return antinodes
+
+
+def count_nodes(data: list[str], part: int = 1) -> int:
     print(f"Grid size is x: {len(data[0])} {len(data)}")
     nodes: dict[str, list[Node]] = defaultdict(lambda: [])
 
@@ -140,7 +175,7 @@ def part1(data_path: str) -> int:
     for group, node_list in nodes.items():
 
         print(f"{group}: {node_list}")
-        keep_antinodes, data = find_antinodes(node_list, data)
+        keep_antinodes, data = find_antinodes(node_list, data, part)
         antiondes.extend(keep_antinodes)
 
     print(antiondes)
@@ -158,15 +193,24 @@ def part1(data_path: str) -> int:
     return count
 
 
+def part1(data_path: str) -> int:
+    with open(data_path, "r") as f_obj:
+        data = [line for line in f_obj.read().split("\n") if line != ""]
+    print_grid(data)
+
+    return count_nodes(data)
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
     print_grid(data)
-    return 0
+
+    return count_nodes(data, part=2)
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part2_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/part1_example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))
