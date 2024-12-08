@@ -90,8 +90,8 @@ def part1(data_path: str) -> int:
             data, i, j, current_direction
         )
         print(f"Starting new direction {current_direction}, {i}, {j}")
-        # print_grid(data)
-        print_to_file(data)
+        print_grid(data)
+        # print_to_file(data)
 
         count += steps_taken
 
@@ -108,15 +108,79 @@ def part1(data_path: str) -> int:
     return location_count
 
 
+def check_loop(data: list[str], i: int, j: int, direction: tuple[int, int]) -> bool:
+    """Check if this obstruction meets the criteria that a loop could be created
+
+    These are:
+     - Third next obstruction steps less than first obstruction
+     - Nothing blocking steps to get back
+    """
+
+    data, i_one, j_one, steps_one, direction_one = find_next_obstruction(
+        data, i, j, direction
+    )
+
+    if i_one is None or j_one is None:
+        return False
+
+    data, i_two, j_two, steps_two, direction_two = find_next_obstruction(
+        data, i_one, j_one, direction_one
+    )
+
+    if i_two is None or j_two is None:
+        return False
+
+    data, i_three, j_three, steps_three, direction_three = find_next_obstruction(
+        data, i_two, j_two, direction_two
+    )
+
+    if steps_three < steps_one:
+        print(f"Failed steps {steps_three = } {steps_one = }")
+        return False
+
+    clear_direction = rotate(direction)
+    for _ in range(steps_two):
+        i += clear_direction[0]
+        j += clear_direction[1]
+        if data[j][i] != '.':
+            print("Failed blocked")
+            return False
+
+    return True
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+
+    i, j = find_initial_pos(data)
+
+    if i is None or j is None:
+        raise Exception("Initial i or j was None")
+
+    current_direction: tuple[int, int] = (0, -1)
+
+    count = 0
+
+    while True:
+
+        data, i, j, _, current_direction = find_next_obstruction(
+            data, i, j, current_direction
+        )
+
+        print(f"{i = } {j = } {count = }")
+
+        if i is None or j is None:
+            break
+
+        if check_loop(data, i, j, current_direction):
+            count += 1
+
+    return count
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part2_example_data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/part1_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
