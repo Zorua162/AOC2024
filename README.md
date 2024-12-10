@@ -73,8 +73,13 @@ Pre-commit.ci automatically runs these checks as an action on Github
 
 ### Day 7
 
-Ended up using sub-optimal solution for part2, but optimized it enoough that it could
+Ended up using sub-optimal solution for part2, but optimized it enough that it could
 solve the answer in a not unreasonable amount of time.
 
 If I have spare time in the future (I probably won't), then I would like to implement
 a more optimal solution.
+
+
+### Day 9
+
+Also very slow
