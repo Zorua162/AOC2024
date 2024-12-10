@@ -110,10 +110,32 @@ def part1(data_path: str) -> int:
     return total_routes
 
 
+def count_routes(routes: list[Route]) -> int:
+    complete_routes: list[Route] = []
+    for route in routes:
+        end_location = route.path[-1]
+        if end_location.value == 9:
+            complete_routes.append(route)
+
+    print(f"{complete_routes = }")
+    return len(complete_routes)
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
     print_grid(data)
+
+    total_routes = 0
+
+    for j, line in enumerate(data):
+        for i, val in enumerate(line):
+            if val == "0":
+                print(f"Starting search at {i = } {j = }")
+                routes = Route([Location(i, j, data)]).find_routes(data)
+                score = count_routes(routes)
+                print(f"Score is {score}")
+                total_routes += score
     return 0
 
 
@@ -121,5 +143,5 @@ if __name__ == "__main__":
     # print(part1(f"{current_day}/simple_data.txt"))
     # print(part1(f"{current_day}/part1_example_data.txt"))
     print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part2_example_data.txt"))
+    # print(part2(f"{current_day}/part1_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
