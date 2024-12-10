@@ -1,5 +1,4 @@
 from day10.day10_solution import part1, part2, Route, Location, count_tops
-import pytest
 
 current_day = "day10"
 
@@ -29,7 +28,6 @@ def test_part2_example_data_output() -> None:
     assert 81 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert 1541 == output

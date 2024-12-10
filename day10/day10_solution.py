@@ -136,12 +136,12 @@ def part2(data_path: str) -> int:
                 score = count_routes(routes)
                 print(f"Score is {score}")
                 total_routes += score
-    return 0
+    return total_routes
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/simple_data.txt"))
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part1_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/data.txt"))
