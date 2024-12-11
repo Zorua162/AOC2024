@@ -3,6 +3,27 @@ from typing import Optional
 current_day = "day6"
 
 
+def location_to_id(i: int, j: int, direction: tuple[int, int]) -> str:
+    return f"{i =}, {j = }, {direction = }"
+
+
+class VisitedLocation:
+    direction: tuple[int, int]
+    x: int
+    y: int
+
+    def __init__(self, direction: tuple[int, int], x: int, y: int):
+        self.direction = direction
+        self.x = x
+        self.y = y
+
+    def only_coords_string(self) -> str:
+        return f"{self.x =}, {self.y = }"
+
+    def __str__(self) -> str:
+        return location_to_id(self.x, self.y, self.direction)
+
+
 def print_grid(grid: list[str]):
     for line in grid:
         print(line)
@@ -37,164 +58,86 @@ def rotate(direction: tuple[int, int]) -> tuple[int, int]:
     raise Exception("Impossible set of i ,j")
 
 
-def edit_data(data: list[str], i: int, j: int, mark: str) -> list[str]:
-    """Put a value into a location in data"""
-    if data[j][i] == "#":
-        mark = "+"
-    line = list(data[j])
-    line[i] = mark
-    data[j] = "".join(line)
-    return data
+def get_all_visited_locations(data: list) -> tuple[list[VisitedLocation], bool]:
+    visited_locations: list[VisitedLocation] = []
 
-
-def find_next_obstruction(
-    data: list[str], i: int, j: int, direction: tuple[int, int], marker: str
-) -> tuple[list[str], Optional[int], Optional[int], int, tuple[int, int]]:
-    # Step in direction up until finding either a # or outside of the index of data
-
-    blocked = False
-
-    steps = 1
-
-    while not blocked:
-        i += direction[0]
-        j += direction[1]
-
-        if i < 0 or j < 0:
-            return data, None, None, steps, rotate(direction)
-
-        try:
-            # print(f"{i}, {j}, {data[j][i]}")
-            if data[j][i] == "#":
-                # print("Found #")
-                blocked = True
-                break
-        except IndexError:
-            blocked = True
-            return data, None, None, steps, rotate(direction)
-        steps += 1
-        edit_data(data, i, j, marker)
-
-    return data, i - direction[0], j - direction[1], steps, rotate(direction)
-
-
-# def do_step(data: list[str]) -> list[str]:
-
-
-def part1(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
     i, j = find_initial_pos(data)
 
     if i is None or j is None:
         raise Exception("Initial i or j was None")
 
     current_direction: tuple[int, int] = (0, -1)
-    count = 0
+
+    initial_location = VisitedLocation(current_direction, i, j)
+    visited_locations.append(initial_location)
+
+    visited_locations_as_ids = [str(initial_location)]
 
     while True:
-        data, i, j, steps_taken, current_direction = find_next_obstruction(
-            data, i, j, current_direction, "X"
-        )
-        print(f"Starting new direction {current_direction}, {i}, {j}")
-        print_grid(data)
-        # print_to_file(data)
-
-        count += steps_taken
+        i, j, current_direction = do_step(data, i, j, current_direction)
 
         if i is None or j is None:
             break
 
-    location_count = 0
+        if location_to_id(i, j, current_direction) in visited_locations_as_ids:
+            return visited_locations, True
 
-    for line in data:
-        for loc in line:
-            if loc == "X":
-                location_count += 1
+        new_location = VisitedLocation(current_direction, i, j)
+        visited_locations.append(new_location)
+        visited_locations_as_ids.append(str(new_location))
 
-    return location_count
-
-
-def check_returns(
-    data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]
-) -> tuple[list[str], Optional[int], Optional[int], int, tuple[int, int], bool]:
-    print(f"Started at {i = } {j = }")
-
-    loop_data = data.copy()
-
-    loop_data, i_one, j_one, steps_one, direction_one = find_next_obstruction(
-        loop_data, i, j, direction, "1"
-    )
-
-    if i_one is None or j_one is None:
-        return data, i_one, j_one, steps, direction, False
-
-    loop_data, i_two, j_two, steps_two, direction_two = find_next_obstruction(
-        loop_data, i_one, j_one, direction_one, "2"
-    )
-
-    if i_two is None or j_two is None:
-        return data, i_two, j_two, steps, direction, False
-
-    # if steps_three > steps:
-    #     print(f"Failed steps {steps_three = } {steps_one = }")
-    #     return False
-
-    clear_direction = direction_two
-    j = j_two
-    i = i_two
-    for _ in range(steps_one):
-        i += clear_direction[0]
-        j += clear_direction[1]
-        if i < 0 or j < 0 or i > len(data[0]) - 1 or j > len(data) - 1:
-            print(f"Failed out of range {i = }, {j = }")
-            return data, None, None, steps, direction, False
-        loc = data[j][i]
-        edit_data(loop_data, i, j, "=")
-        print_to_file(loop_data)
-        if loc == "#":  # or loc == "^":
-            print(f"Failed blocked {i = }, {j = } {loc}")
-            return data, i, j, steps, direction, False
-    edit_data(loop_data, i, j, "O")
-    print_to_file(loop_data, name=f"loops/loop{i}-{j}.txt")
-    print("Loop found")
-    # data, i_three, j_three, steps_three, direction_three = find_next_obstruction(
-    #     data, i_two, j_two, direction_two
-    # )
-
-    # if steps_three < steps_one:
-    #     print(f"Failed steps {steps_three = } {steps_one = }")
-    #     return False
-
-    # clear_direction = rotate(direction)
-    # for _ in range(steps_two):
-    #     i += clear_direction[0]
-    #     j += clear_direction[1]
-    #     if data[j][i] != '.':
-    #         print("Failed blocked")
-    #         return False
-
-    return data, i, j, steps, direction, True
+    return visited_locations, False
 
 
-def check_loop(
-    data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]
-) -> bool:
-    """Check if this obstruction meets the criteria that a loop could be created
+def part1(data_path: str) -> int:
+    with open(data_path, "r") as f_obj:
+        data = [line for line in f_obj.read().split("\n") if line != ""]
 
-    These are:
-     - Nothing blocking steps to get back
-    """
-    found_end = False
-    while not found_end:
-        data, i, j, steps, direction, complete_loop = check_returns(  # type: ignore
-            data, i, j, steps, direction
-        )
-        if i is None or j is None or complete_loop:
-            found_end = True
-            break
+    visited_locations, _ = get_all_visited_locations(data)
 
-    return complete_loop
+    coords_locations: list[str] = [
+        visited_location.only_coords_string() for visited_location in visited_locations
+    ]
+
+    return len(set(coords_locations))
+
+
+def check_inside_data(i: int, j: int, data: list[str]) -> bool:
+    if i <= -1 or j <= -1 or i >= len(data[0]) or j >= len(data):
+        return False
+
+    return True
+
+
+def do_step(
+    data: list[str], i: int, j: int, direction: tuple[int, int]
+) -> tuple[Optional[int], Optional[int], tuple[int, int]]:
+    new_i = i + direction[0]
+    new_j = j + direction[1]
+
+    if not check_inside_data(new_i, new_j, data):
+        return (None, None, direction)
+
+    if data[new_j][new_i] == "#":
+        return (i, j, rotate(direction))
+
+    return (new_i, new_j, direction)
+
+
+def add_block(
+    data: list[str], location: VisitedLocation, value: str = "#"
+) -> list[str]:
+    line: list[str] = list(data[location.y])
+
+    # We don't edit the initial block as that would alert the guard!
+    if line[location.x] == "^":
+        return data
+
+    line[location.x] = value
+
+    data[location.y] = "".join(line)
+
+    return data
 
 
 def part2(data_path: str) -> int:
@@ -208,44 +151,43 @@ def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
 
-    i, j = find_initial_pos(data)
+    loop_block_location: list[VisitedLocation] = []
 
-    if i is None or j is None:
-        raise Exception("Initial i or j was None")
+    # Get every location where the guard goes
+    visited_locations, _ = get_all_visited_locations(data)
 
-    current_direction: tuple[int, int] = (0, -1)
+    # Try placing a b lock at each of these locations
 
-    count = 0
+    for i, location in enumerate(visited_locations):
+        print(f"Starting {i}/{len(visited_locations)}")
 
-    while True:
-        mark = "X"
+        edited_data = data.copy()
+        edited_data = add_block(edited_data, location)
 
-        if current_direction[0] != 0:
-            mark = "-"
-        else:
-            mark = "|"
+        _, is_loop = get_all_visited_locations(edited_data)
 
-        data, i, j, steps, current_direction = find_next_obstruction(
-            data, i, j, current_direction, mark
-        )
+        if is_loop:
+            edited_data = add_block(edited_data, location, "O")
+            # print_to_file(edited_data, f"loops/{location}.txt")
+            loop_block_location.append(location)
 
-        print(f"{i = } {j = } {count = }")
+    # Run the sim to see if the guard returns to a prior location
 
-        if i is None or j is None:
-            break
+    # If the guard is at a location he has been before and is facing the same direction
+    # then he is in a loop
 
-        if check_loop(data, i, j, steps, current_direction):
-            count += 1
-            print(f"Current loop count is {count = }")
+    deduplicated = set(
+        [location.only_coords_string() for location in loop_block_location]
+    )
 
-    return count
+    return len(deduplicated)
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
     # print(part1(f"{current_day}/data.txt"))
-    print(part2(f"{current_day}/part1_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/part1_example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))
 
 # 66: Not the right answer
 
