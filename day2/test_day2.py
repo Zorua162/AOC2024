@@ -1,5 +1,4 @@
 from day2.day2_solution import part1, part2, check_line_safe_part2
-import pytest
 
 current_day = "day2"
 
@@ -23,7 +22,6 @@ def test_edge_case_1() -> None:
     assert not check_line_safe_part2("5 6 5 8 10 12 17")
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert 293 == output
