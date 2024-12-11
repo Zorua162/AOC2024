@@ -73,8 +73,23 @@ Pre-commit.ci automatically runs these checks as an action on Github
 
 ### Day 7
 
-Ended up using sub-optimal solution for part2, but optimized it enoough that it could
+Ended up using sub-optimal solution for part2, but optimized it enough that it could
 solve the answer in a not unreasonable amount of time.
 
 If I have spare time in the future (I probably won't), then I would like to implement
 a more optimal solution.
+
+
+### Day 9
+
+Also very slow
+
+
+### Day 10
+
+No improvements needed, although I found getting the initial recursions right tricky I
+found that for part 2 I had already coded for the general case, making it very fast
+
+### Day 11
+
+Also no improvements needed, wrote the optimized solution first try!
