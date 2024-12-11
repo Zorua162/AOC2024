@@ -83,3 +83,13 @@ a more optimal solution.
 ### Day 9
 
 Also very slow
+
+
+### Day 10
+
+No improvements needed, although I found getting the initial recursions right tricky I
+found that for part 2 I had already coded for the general case, making it very fast
+
+### Day 11
+
+Also no improvements needed, wrote the optimized solution first try!
