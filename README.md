@@ -71,6 +71,18 @@ Pre-commit.ci automatically runs these checks as an action on Github
 
 ## Notes on improvements
 
+
+### Day 6
+
+Had massive issues with this day, partially as I misunderstood part 2 to mean a loop which has only 4 corners (and not double or many loops).
+
+I used the extra time I had from completing day 11 to re-visit this day, and through
+some discussions with a colleague came up with a solution which solved the problem.
+
+However, I am not entirely happy with this solution, as it takes far too long
+to get the answer, so it would be nice to re-visit this again in the future to better
+understand the more optimized ways of doing this.
+
 ### Day 7
 
 Ended up using sub-optimal solution for part2, but optimized it enough that it could
