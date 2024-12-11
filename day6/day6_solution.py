@@ -93,7 +93,6 @@ def part1(data_path: str) -> int:
     count = 0
 
     while True:
-
         data, i, j, steps_taken, current_direction = find_next_obstruction(
             data, i, j, current_direction, "X"
         )
@@ -116,15 +115,9 @@ def part1(data_path: str) -> int:
     return location_count
 
 
-def check_loop(
+def check_returns(
     data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]
-) -> bool:
-    """Check if this obstruction meets the criteria that a loop could be created
-
-    These are:
-     - Nothing blocking steps to get back
-    """
-
+) -> tuple[list[str], Optional[int], Optional[int], int, tuple[int, int], bool]:
     print(f"Started at {i = } {j = }")
 
     loop_data = data.copy()
@@ -134,14 +127,14 @@ def check_loop(
     )
 
     if i_one is None or j_one is None:
-        return False
+        return data, i_one, j_one, steps, direction, False
 
     loop_data, i_two, j_two, steps_two, direction_two = find_next_obstruction(
         loop_data, i_one, j_one, direction_one, "2"
     )
 
     if i_two is None or j_two is None:
-        return False
+        return data, i_two, j_two, steps, direction, False
 
     # if steps_three > steps:
     #     print(f"Failed steps {steps_three = } {steps_one = }")
@@ -155,13 +148,13 @@ def check_loop(
         j += clear_direction[1]
         if i < 0 or j < 0 or i > len(data[0]) - 1 or j > len(data) - 1:
             print(f"Failed out of range {i = }, {j = }")
-            return False
+            return data, None, None, steps, direction, False
         loc = data[j][i]
         edit_data(loop_data, i, j, "=")
         print_to_file(loop_data)
         if loc == "#":  # or loc == "^":
             print(f"Failed blocked {i = }, {j = } {loc}")
-            return False
+            return data, i, j, steps, direction, False
     edit_data(loop_data, i, j, "O")
     print_to_file(loop_data, name=f"loops/loop{i}-{j}.txt")
     print("Loop found")
@@ -181,7 +174,27 @@ def check_loop(
     #         print("Failed blocked")
     #         return False
 
-    return True
+    return data, i, j, steps, direction, True
+
+
+def check_loop(
+    data: list[str], i: int, j: int, steps: int, direction: tuple[int, int]
+) -> bool:
+    """Check if this obstruction meets the criteria that a loop could be created
+
+    These are:
+     - Nothing blocking steps to get back
+    """
+    found_end = False
+    while not found_end:
+        data, i, j, steps, direction, complete_loop = check_returns(  # type: ignore
+            data, i, j, steps, direction
+        )
+        if i is None or j is None or complete_loop:
+            found_end = True
+            break
+
+    return complete_loop
 
 
 def part2(data_path: str) -> int:
@@ -205,7 +218,6 @@ def part2(data_path: str) -> int:
     count = 0
 
     while True:
-
         mark = "X"
 
         if current_direction[0] != 0:
@@ -236,3 +248,8 @@ if __name__ == "__main__":
     # print(part2(f"{current_day}/data.txt"))
 
 # 66: Not the right answer
+
+
+# Issue is that "double loops" aren't found
+# Need to figure out the i, j starting of the fifth example loop and then test against
+# it until my solution can find those kinds of loops!
