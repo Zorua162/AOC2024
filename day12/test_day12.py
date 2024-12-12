@@ -9,10 +9,9 @@ def test_part1_example_data_output() -> None:
     assert 1930 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part1_data_output():
     output = part1(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert 1533644 == output
 
 
 @pytest.mark.skip("Part 2 not started yet")
