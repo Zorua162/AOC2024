@@ -46,8 +46,12 @@ class Machine:
         res = np.linalg.inv(A).dot(Y)
         return res
 
+    def add_part2(self):
+        self.prize_x += 10000000000000
+        self.prize_y += 10000000000000
 
-def part1(data_path: str) -> int:
+
+def solve_day(data_path: str, part2: bool = False) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
 
@@ -58,12 +62,15 @@ def part1(data_path: str) -> int:
     for i in range(0, len(data), 3):
         print(f"{data[i]}\n{data[i + 1]}\n{data[i + 2]}")
         machine = Machine(i, data)
+        if part2:
+            machine.add_part2()
         machines.append(machine)
         out = machine.solve_part_1()
 
         print(f"{out = }")
-        A = round(out[0], 5)
-        B = round(out[1], 5)
+        dp = 3
+        A = round(out[0], dp)
+        B = round(out[1], dp)
 
         print(f"{A = } {B = }")
         if A % 1 == 0 and B % 1 == 0:
@@ -76,11 +83,12 @@ def part1(data_path: str) -> int:
     return int(output)
 
 
+def part1(data_path: str) -> int:
+    return solve_day(data_path)
+
+
 def part2(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+    return solve_day(data_path, True)
 
 
 def do_solve():
@@ -94,6 +102,12 @@ def do_solve():
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
     # do_solve()
-    print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part1_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/data.txt"))
+
+
+# 72106378678731 Too high
+
+# Changing round:
+# 71493195288102 2dp
