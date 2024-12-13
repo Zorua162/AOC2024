@@ -25,6 +25,9 @@ class Location:
     def get_id(self):
         return f"{self.x = }, {self.y = }"
 
+    def __str__(self):
+        return f"Location: {self.get_id()}"
+
 
 class Group:
     locations: list[Location]
@@ -84,6 +87,7 @@ class Group:
         perimeter = 0
         found_edges: list[str] = []
         for location in self.locations:
+            print(location)
             for direction in directions:
                 check_x = location.x + direction[0]
                 check_y = location.y + direction[1]
@@ -92,11 +96,10 @@ class Group:
                     or data[check_y][check_x] != self.group_type
                 ):
                     edge_id = self.find_edge_id(check_x, check_y, data, direction)
-
                     if edge_id not in found_edges:
                         perimeter += 1
                         found_edges.append(edge_id)
-        print(found_edges)
+        print(f"{found_edges = }")
         return perimeter
 
     def find_edge_id(
@@ -107,42 +110,61 @@ class Group:
         inside_x = x - direction[0]
         inside_y = y - direction[1]
 
-        if direction[0] != 0:
-            # search up down
-            search_dir = (0, -1)
-        else:
-            # search left right
-            search_dir = (-1, 0)
+        # if direction[0] != 0:
+        #     # search up down
+        #     search_dir = (0, -1)
+        # else:
+        #     # search left right
+        #     search_dir = (-1, 0)
 
-        edge_id_locs: list[str] = [Location(inside_x, inside_y).get_id()]
+        search_dir = rotate(direction)
 
         search_x = inside_x
         search_y = inside_y
+        edge_x = search_x + direction[0]
+        edge_y = search_y + direction[1]
+
+        edge_id_locs: list[str] = [Location(edge_x, edge_y).get_id() + str(direction)]
+
         while True:
+            print(f"{direction} {edge_id_locs = }")
             search_x += search_dir[0]
             search_y += search_dir[1]
-            block_x = search_x + direction[0]
-            block_y = search_y + direction[1]
+            edge_x = search_x + direction[0]
+            edge_y = search_y + direction[1]
 
-            # If outside of data:
+            if (
+                check_inside_data(search_x, search_y, data)
+                and data[search_y][search_x] != self.group_type
+            ):
+                break
+
+            if (
+                check_inside_data(edge_x, edge_y, data)
+                and data[edge_y][edge_x] == self.group_type
+            ):
+                break
 
             if not check_inside_data(search_x, search_y, data):
-                pass
-                # Rules for continuing searching this side of the edge
-                if (
-                    not check_inside_data(search_x, search_y, data)
-                    or data[search_y][search_x] != self.group_type
-                ) and data[block_y][block_x] != self.group_type:
-                    break
-            else:
-                if (
-                    not check_inside_data(search_x, search_y, data)
-                    or data[search_y][search_x] != self.group_type
-                ):
-                    break
-            edge_id_locs.append(Location(search_x, search_y).get_id())
+                break
 
-        return "".join(sorted(edge_id_locs))
+            edge_id_locs.append(Location(edge_x, edge_y).get_id() + str(direction))
+
+            #     pass
+            #     # Rules for continuing searching this side of the edge
+            #     if (
+            #         not check_inside_data(search_x, search_y, data)
+            #         or data[search_y][search_x] != self.group_type
+            #     ) and data[edge_y][edge_x] != self.group_type:
+            #         break
+            # else:
+            #     if (
+            #         not check_inside_data(search_x, search_y, data)
+            #         or
+            #     ):
+            #         break
+
+        return edge_id_locs[-1]
 
 
 def check_at_perimeter(data: list[str], i: int, j: int, group_type: str) -> bool:
