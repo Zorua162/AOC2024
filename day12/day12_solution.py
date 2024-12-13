@@ -80,6 +80,70 @@ class Group:
                     perimeter += 1
         return perimeter
 
+    def find_perimeter_part2(self, data: list[str]) -> int:
+        perimeter = 0
+        found_edges: list[str] = []
+        for location in self.locations:
+            for direction in directions:
+                check_x = location.x + direction[0]
+                check_y = location.y + direction[1]
+                if (
+                    not check_inside_data(check_x, check_y, data)
+                    or data[check_y][check_x] != self.group_type
+                ):
+                    edge_id = self.find_edge_id(check_x, check_y, data, direction)
+
+                    if edge_id not in found_edges:
+                        perimeter += 1
+                        found_edges.append(edge_id)
+        print(found_edges)
+        return perimeter
+
+    def find_edge_id(
+        self, x: int, y: int, data: list[str], direction: tuple[int, int]
+    ) -> str:
+        # Loop all along this edge and find the top most or left most location
+
+        inside_x = x - direction[0]
+        inside_y = y - direction[1]
+
+        if direction[0] != 0:
+            # search up down
+            search_dir = (0, -1)
+        else:
+            # search left right
+            search_dir = (-1, 0)
+
+        edge_id_locs: list[str] = [Location(inside_x, inside_y).get_id()]
+
+        search_x = inside_x
+        search_y = inside_y
+        while True:
+            search_x += search_dir[0]
+            search_y += search_dir[1]
+            block_x = search_x + direction[0]
+            block_y = search_y + direction[1]
+
+            # If outside of data:
+
+            if not check_inside_data(search_x, search_y, data):
+                pass
+                # Rules for continuing searching this side of the edge
+                if (
+                    not check_inside_data(search_x, search_y, data)
+                    or data[search_y][search_x] != self.group_type
+                ) and data[block_y][block_x] != self.group_type:
+                    break
+            else:
+                if (
+                    not check_inside_data(search_x, search_y, data)
+                    or data[search_y][search_x] != self.group_type
+                ):
+                    break
+            edge_id_locs.append(Location(search_x, search_y).get_id())
+
+        return "".join(sorted(edge_id_locs))
+
 
 def check_at_perimeter(data: list[str], i: int, j: int, group_type: str) -> bool:
     return not check_inside_data(i, j, data) or data[j][i] != group_type
@@ -114,12 +178,7 @@ def check_inside_data(i: int, j: int, data: list[str]) -> bool:
     return True
 
 
-def part1(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
-    # print_grid(data)
-
-    # Plan
+def find_groups(data: list[str]) -> list[Group]:
     # keep a list of grouped locations
     already_grouped: list[str] = []
     groups: list[Group] = []
@@ -129,7 +188,6 @@ def part1(data_path: str) -> int:
 
     for j, line in enumerate(data):
         for i, val in enumerate(line):
-            print(f"Starting location {i = } {j = }")
             location = Location(i, j)
             if location.get_id() not in already_grouped:
                 new_group = Group(location, val)
@@ -137,6 +195,15 @@ def part1(data_path: str) -> int:
 
                 already_grouped.extend(new_group.get_all_location_ids())
                 groups.append(new_group)
+    return groups
+
+
+def part1(data_path: str) -> int:
+    with open(data_path, "r") as f_obj:
+        data = [line for line in f_obj.read().split("\n") if line != ""]
+    # print_grid(data)
+
+    groups = find_groups(data)
 
     total_price = 0
 
@@ -156,13 +223,29 @@ def part1(data_path: str) -> int:
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+    # print_grid(data)
+
+    groups = find_groups(data)
+
+    total_price = 0
+
+    for group in groups:
+        perimeter = group.find_perimeter_part2(data)
+        price = len(group.locations) * perimeter
+        print(
+            f"A region of {group.group_type} plants with price {len(group.locations)} * {perimeter} = {price}"
+        )
+        total_price += price
+
+    # Area is just length of list
+
+    return total_price
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/small_example.txt"))
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/simple_example.txt"))
     # print(part2(f"{current_day}/part1_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
