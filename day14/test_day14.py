@@ -1,5 +1,4 @@
-from day14.day14_solution import part1, part2, Robot, draw_grid
-import pytest
+from day14.day14_solution import part1, Robot, draw_grid, do_closeness
 
 current_day = "day14"
 
@@ -26,19 +25,11 @@ def test_part1_example_data_output() -> None:
     assert 12 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part1_data_output():
-    output = part1(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    output = part1(f"{current_day}/data.txt", 101, 103)
+    assert 208437768 == output
 
 
-@pytest.mark.skip("Part 2 not started yet")
-def test_part2_example_data_output() -> None:
-    output: int = part2(f"{current_day}/part1_example_data.txt")
-    assert 0 == output
-
-
-@pytest.mark.skip("Answer is from AOC website")
 def test_part2_data_output():
-    output = part2(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    output = do_closeness(f"{current_day}/data.txt", 101, 103, 10402)
+    assert 7492 == output
