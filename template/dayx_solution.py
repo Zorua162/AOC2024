@@ -1,7 +1,9 @@
+from typing import Any
+
 current_day = "dayx"
 
 
-def print_grid(grid: list[str]):
+def print_grid(grid: list[Any]):
     for line in grid:
         print(line)
 
