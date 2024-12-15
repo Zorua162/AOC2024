@@ -7,7 +7,7 @@ jobs:
     name: Unit test distribution 🧪
     runs-on: ubuntu-latest
     env:
-      YEAR: ${{ secrets.YEAR }}
+      YEAR: ${{ vars.YEAR }}
       AOC_SESSION: ${{ secrets.AOC_SESSION }}
     steps:
     - uses: actions/checkout@v4
