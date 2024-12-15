@@ -3,14 +3,19 @@ import shutil
 import os
 import sys
 
+from get_data import get_days_data
 
-def create_folder(day_number: int) -> None:
+
+def create_folder(day_number: int) -> str:
     # Copy the folder
     print("Copying files into folder")
+    folder_name = f"day{day_number}"
     try:
-        shutil.copytree("template", f"day{day_number}")
+        shutil.copytree("template", folder_name)
     except FileExistsError:
         raise Exception(f"Folder day{day_number} already exists, exiting")
+
+    return folder_name
 
 
 def change_file_names(day_number: int) -> None:
@@ -73,8 +78,9 @@ def main():
         valid = True
     print(f"Using day number {day_number}")
     create_folder(day_number)
-    change_file_names(day_number)
+    folder_name = change_file_names(day_number)
     update_file_content(day_number)
+    get_days_data(folder_name, day_number)
     print("Done! Enjoy your day")
 
 
