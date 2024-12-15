@@ -18,7 +18,7 @@ def test_path_one_route_expected() -> None:
     assert 1 == score
 
 
-def test_part1_data_output():
+def test_part1_data_output(get_days_data_fixture):
     output = part1(f"{current_day}/data.txt")
     assert 746 == output
 

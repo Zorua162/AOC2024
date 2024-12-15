@@ -25,7 +25,7 @@ def test_part1_example_data_output() -> None:
     assert 12 == output
 
 
-def test_part1_data_output():
+def test_part1_data_output(get_days_data_fixture):
     output = part1(f"{current_day}/data.txt", 101, 103)
     assert 208437768 == output
 

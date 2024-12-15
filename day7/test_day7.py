@@ -10,7 +10,7 @@ def test_part1_example_data_output() -> None:
 
 
 @pytest.mark.skip("Too slow to be running on CI/CD, solution needs improvement")
-def test_part1_data_output():
+def test_part1_data_output(get_days_data_fixture):
     output = part1(f"{current_day}/data.txt")
     assert 2314935962622 == output
 
@@ -20,7 +20,7 @@ def test_part2_example_data_output() -> None:
     assert 11387 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
+@pytest.mark.skip("Too slow to be running on CI/CD, solution needs improvement")
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert 401477450831495 == output
