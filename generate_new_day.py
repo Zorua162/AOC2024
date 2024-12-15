@@ -3,8 +3,6 @@ import shutil
 import os
 import sys
 
-from get_data import get_days_data
-
 
 def create_folder(day_number: int) -> str:
     # Copy the folder
@@ -18,7 +16,7 @@ def create_folder(day_number: int) -> str:
     return folder_name
 
 
-def change_file_names(day_number: int) -> None:
+def change_file_names(day_number: int) -> str:
     print("Updating file names")
     day_folder = f"day{day_number}"
     # Renmae the solution file
@@ -27,6 +25,8 @@ def change_file_names(day_number: int) -> None:
     )
     # Rename the tests file
     os.rename(f"{day_folder}/test_dayx.py", f"{day_folder}/test_day{day_number}.py")
+
+    return day_folder
 
 
 def update_file_content(day_number: int) -> None:
@@ -78,9 +78,8 @@ def main():
         valid = True
     print(f"Using day number {day_number}")
     create_folder(day_number)
-    folder_name = change_file_names(day_number)
+    change_file_names(day_number)
     update_file_content(day_number)
-    get_days_data(folder_name, day_number)
     print("Done! Enjoy your day")
 
 
