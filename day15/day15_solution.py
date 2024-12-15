@@ -68,13 +68,19 @@ class Box(Location):
         self.y = y
 
 
+class LargeBox(Location):
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
+
+
 class Robot(Location):
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
 
 
-def part1(data_path: str) -> int:
+def parse_data(data_path: str) -> tuple[str, list[str]]:
     with open(data_path, "r") as f_obj:
         data = f_obj.read()
 
@@ -84,10 +90,68 @@ def part1(data_path: str) -> int:
 
     moves = split_data[1][:-1].replace("\n", "")
 
+    return moves, initial_map
+
+
+def calculate_coords(boxes: list[Union[Box, LargeBox]]) -> int:
+    total = 0
+    for box in boxes:
+        total += 100 * box.y + box.x
+
+    return total
+
+
+def make_empty_map(initial_map: list[str]) -> list[str]:
+    current_map: list[str] = []
+    for row in initial_map:
+        current_map.append(row.replace("O", ".").replace("@", "."))
+
+    return current_map
+
+
+def output_situation(
+    robot: Robot, boxes: list[Union[Box, LargeBox]], empty_map: list[str]
+):
+    current_map: list[list[str]] = [list(row) for row in empty_map]
+
+    for box in boxes:
+        current_map[box.y][box.x] = "["
+        current_map[box.y][box.x + 1] = "]"
+
+    current_map[robot.y][robot.x] = "@"
+
+    print_grid(["".join(row) for row in current_map])
+
+
+def do_moves(
+    robot: Robot, boxes: list[Union[Box, LargeBox]], initial_map: list[str], moves: str
+):
+    empty_map: list[str] = make_empty_map(initial_map)
+    for move in moves:
+        print(move)
+        robot.do_move(move, empty_map, boxes)  # type: ignore
+        output_situation(robot, boxes, empty_map)
+
+
+def expand_map(initial_map: list[str]) -> list[str]:
+    expanded_map = []
+    for row in initial_map:
+        expanded_map.append(
+            row.replace("#", "##")
+            .replace(".", "..")
+            .replace("O", "[]")
+            .replace("@", "@.")
+        )
+
+    return expanded_map
+
+
+def part1(data_path: str) -> int:
+    moves, initial_map = parse_data(data_path)
     print(f"{initial_map = } {moves = }")
 
     robot: Optional[Robot] = None
-    boxes: list[Box] = []
+    boxes: list[Union[Box, LargeBox]] = []
 
     for j, line in enumerate(initial_map):
         for i, val in enumerate(line):
@@ -104,51 +168,34 @@ def part1(data_path: str) -> int:
     return calculate_coords(boxes)
 
 
-def calculate_coords(boxes: list[Box]) -> int:
-    total = 0
-    for box in boxes:
-        total += 100 * box.y + box.x
-
-    return total
-
-
-def make_empty_map(initial_map: list[str]) -> list[str]:
-    current_map: list[str] = []
-    for row in initial_map:
-        current_map.append(row.replace("O", ".").replace("@", "."))
-
-    return current_map
-
-
-def output_situation(robot: Robot, boxes: list[Box], empty_map: list[str]):
-    current_map: list[list[str]] = [list(row) for row in empty_map]
-
-    for box in boxes:
-        current_map[box.y][box.x] = "O"
-
-    current_map[robot.y][robot.x] = "@"
-
-    print_grid(["".join(row) for row in current_map])
-
-
-def do_moves(robot: Robot, boxes: list[Box], initial_map: list[str], moves: str):
-    empty_map: list[str] = make_empty_map(initial_map)
-    for move in moves:
-        # print(move)
-        robot.do_move(move, empty_map, boxes)  # type: ignore
-        # output_situation(robot, boxes, empty_map)
-
-
 def part2(data_path: str) -> int:
-    with open(data_path, "r") as f_obj:
-        data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+    moves, initial_map = parse_data(data_path)
+
+    expanded_map = expand_map(initial_map)
+
+    print_grid(expanded_map)
+
+    robot: Optional[Robot] = None
+    boxes: list[Union[Box, LargeBox]] = []
+
+    for j, line in enumerate(expanded_map):
+        for i, val in enumerate(line):
+            if val == "@":
+                robot = Robot(i, j)
+            elif val == "[":
+                boxes.append(LargeBox(i, j))
+
+    if robot is None:
+        raise Exception("Robot not found")
+
+    do_moves(robot, boxes, expanded_map, moves)
+
+    return calculate_coords(boxes)
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
     # print(part1(f"{current_day}/larger_example_data.txt"))
     print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part1_example_data.txt"))
+    # print(part2(f"{current_day}/part2_example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
