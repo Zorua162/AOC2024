@@ -10,7 +10,7 @@ def test_part1_example_data_output(get_days_example_data_fixture) -> None:
     assert 2028 == output
 
 
-def test_larger_example_data_output() -> None:
+def test_larger_example_data_output(get_days_data_fixture) -> None:
     output: int = part1(f"{current_day}/example_data.txt")
     assert 10092 == output
 
@@ -20,7 +20,7 @@ def test_part1_data_output(get_days_data_fixture):
     assert 1456590 == output
 
 
-def test_part2_example_data_output() -> None:
+def test_part2_example_data_output(get_days_data_fixture) -> None:
     output: int = part2(f"{current_day}/example_data.txt")
     assert 9021 == output
 
