@@ -31,35 +31,77 @@ class Location:
     y: int
 
     def __repr__(self):
-        return f"({type(self).__name__}: {self.x = }, {self.y = })"
+        return f"({self.__hash__} {type(self).__name__}: {self.x = }, {self.y = })"
 
     def do_move(
-        self, move: str, wall_map: list[str], boxes: list[Union[Robot, Box]]
-    ) -> bool:
+        self,
+        move: str,
+        wall_map: list[str],
+        boxes: list[Union[Box, LargeBox]],
+        already_moved: list[Union[Box, LargeBox]],
+    ) -> tuple[bool, list[Union[Box, LargeBox]]]:
+        # print(f"Doing move for {self}")
         move_vector = move_dict[move]
         new_x = self.x + move_vector[0]
         new_y = self.y + move_vector[1]
 
         # If the new location is a wall then return
         if wall_map[new_y][new_x] == "#":
-            return False
+            return False, already_moved
 
         # Now we see if boxes would block (or should be moved)
+        if isinstance(self, LargeBox):
+            if wall_map[new_y][new_x + 1] == "#":
+                return False, already_moved
 
         successful = True
 
         for box in boxes:
-            # If a box is at our new coords, then it needs to be moved
-            # This then needs to be run on the box that was moved to see if other boxes
-            # need to be moved too
-            if box.x == new_x and box.y == new_y:
-                successful = box.do_move(move, wall_map, boxes)
+            if self == box:
+                continue
+            successful, already_moved = try_move(
+                new_x, new_y, box, move, wall_map, boxes, already_moved
+            )
+            if isinstance(self, LargeBox) and not self == box:
+                successful_right, already_moved = try_move(
+                    new_x + 1, new_y, box, move, wall_map, boxes, already_moved
+                )
+
+                successful = successful and successful_right
+
             if not successful:
-                return False
+                return False, already_moved
 
         self.x = new_x
         self.y = new_y
-        return True
+        if isinstance(self, Box) or isinstance(self, LargeBox):
+            # print(f"Appending to already_moved {self = } {already_moved = }")
+            already_moved.append(self)
+        return True, already_moved
+
+
+def try_move(
+    new_x: int,
+    new_y: int,
+    box: Union[Box, LargeBox],
+    move: str,
+    wall_map: list[str],
+    boxes: list[Union[Box, LargeBox]],
+    already_moved: list[Union[Box, LargeBox]],
+) -> tuple[bool, list[Union[Box, LargeBox]]]:
+    successful = True
+    # If a box is at our new coords, then it needs to be moved
+    # This then needs to be run on the box that was moved to see if other boxes
+    # need to be moved too
+    if box.x == new_x and box.y == new_y:
+        successful, already_moved = box.do_move(move, wall_map, boxes, already_moved)
+
+    if isinstance(box, LargeBox):
+        if box.x + 1 == new_x and box.y == new_y:
+            successful, already_moved = box.do_move(
+                move, wall_map, boxes, already_moved
+            )
+    return successful, already_moved
 
 
 class Box(Location):
@@ -104,7 +146,9 @@ def calculate_coords(boxes: list[Union[Box, LargeBox]]) -> int:
 def make_empty_map(initial_map: list[str]) -> list[str]:
     current_map: list[str] = []
     for row in initial_map:
-        current_map.append(row.replace("O", ".").replace("@", "."))
+        current_map.append(
+            row.replace("O", ".").replace("@", ".").replace("[", ".").replace("]", ".")
+        )
 
     return current_map
 
@@ -115,12 +159,16 @@ def output_situation(
     current_map: list[list[str]] = [list(row) for row in empty_map]
 
     for box in boxes:
-        current_map[box.y][box.x] = "["
-        current_map[box.y][box.x + 1] = "]"
+        # print(f"{box}")
+        if isinstance(box, Box):
+            current_map[box.y][box.x] = "#"
+        else:
+            current_map[box.y][box.x] = "["
+            current_map[box.y][box.x + 1] = "]"
 
     current_map[robot.y][robot.x] = "@"
 
-    print_grid(["".join(row) for row in current_map])
+    # print_grid(["".join(row) for row in current_map])
 
 
 def do_moves(
@@ -128,8 +176,16 @@ def do_moves(
 ):
     empty_map: list[str] = make_empty_map(initial_map)
     for move in moves:
-        print(move)
-        robot.do_move(move, empty_map, boxes)  # type: ignore
+        already_moved: list[Union[Box, LargeBox]] = []
+        # print(f"{move = }")
+        successful, already_moved = robot.do_move(move, empty_map, boxes, already_moved)  # type: ignore
+        if not successful:
+            # print(f"{already_moved = }")
+            # Undo the move for that box
+            for box in already_moved:
+                box.x -= move_dict[move][0]
+                box.y -= move_dict[move][1]
+
         output_situation(robot, boxes, empty_map)
 
 
@@ -195,7 +251,8 @@ def part2(data_path: str) -> int:
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/part1_example_data.txt"))
-    # print(part1(f"{current_day}/larger_example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part2_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/larger_example_data.txt"))
+    # print(part2(f"{current_day}/my_test_case.txt"))
+    print(part2(f"{current_day}/data.txt"))
