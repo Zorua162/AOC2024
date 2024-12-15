@@ -4,16 +4,19 @@ import os
 import sys
 
 
-def create_folder(day_number: int) -> None:
+def create_folder(day_number: int) -> str:
     # Copy the folder
     print("Copying files into folder")
+    folder_name = f"day{day_number}"
     try:
-        shutil.copytree("template", f"day{day_number}")
+        shutil.copytree("template", folder_name)
     except FileExistsError:
         raise Exception(f"Folder day{day_number} already exists, exiting")
 
+    return folder_name
 
-def change_file_names(day_number: int) -> None:
+
+def change_file_names(day_number: int) -> str:
     print("Updating file names")
     day_folder = f"day{day_number}"
     # Renmae the solution file
@@ -22,6 +25,8 @@ def change_file_names(day_number: int) -> None:
     )
     # Rename the tests file
     os.rename(f"{day_folder}/test_dayx.py", f"{day_folder}/test_day{day_number}.py")
+
+    return day_folder
 
 
 def update_file_content(day_number: int) -> None:
