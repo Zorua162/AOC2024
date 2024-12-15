@@ -72,7 +72,6 @@ def is_inside(x: int, y: int, data: list[str]) -> bool:
 def check_antinode_in_grid(
     antinodes: list[AntiNode], data: list[str]
 ) -> tuple[list[AntiNode], list[str]]:
-
     out_antinodes = []
     for antinode in antinodes:
         if is_inside(antinode.x, antinode.y, data):
@@ -91,7 +90,6 @@ def find_antinodes(
 
     # Pair each set
     for node_1, node_2 in combinations(nodes, 2):
-
         print(f"{node_1} {node_2}")
 
         # y = mx + b
@@ -126,7 +124,6 @@ def find_antinodes(
 def find_harmonics(
     node: Node, diff_x: int, diff_y: int, data: list[str]
 ) -> list[AntiNode]:
-
     outside = False
 
     antinodes = []
@@ -173,7 +170,6 @@ def count_nodes(data: list[str], part: int = 1) -> int:
     antiondes: list[AntiNode] = []
 
     for group, node_list in nodes.items():
-
         print(f"{group}: {node_list}")
         keep_antinodes, data = find_antinodes(node_list, data, part)
         antiondes.extend(keep_antinodes)

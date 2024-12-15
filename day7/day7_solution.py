@@ -16,7 +16,6 @@ def print_to_file(data: list[str]):
 
 
 def solve_equation(operators: tuple[str, ...], numbers: list[int]) -> int:
-
     val = numbers[0]
 
     for i, operator in enumerate(operators):
@@ -67,7 +66,6 @@ def check_possible(input_numbers: list[int], goal_number: int):
 def solve_equation_smart(
     operators: tuple[str, ...], numbers: list[int], goal_number: int
 ) -> int:
-
     val = numbers[0]
 
     for i, operator in enumerate(operators):
@@ -86,7 +84,6 @@ def solve_equation_smart(
 
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
-
         data = [line for line in f_obj.read().split("\n") if line != ""]
 
     total = 0
