@@ -85,7 +85,7 @@ class Computer:
     def do_instructions(self) -> str:
         ans = []
         while True:
-            print(self.pointer)
+            # print(self.pointer)
             opcode = self.instructions[self.pointer]
             operand = self.instructions[self.pointer + 1]
 
@@ -112,15 +112,30 @@ def part1(data_path: str) -> str:
     return computer.do_instructions()
 
 
+def check_register_value(A: int, B: int, C: int, instructions: str) -> bool:
+    computer = Computer(A, B, C, instructions)
+    out = computer.do_instructions()
+    return out == instructions
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+    register_B = int(data[1].split(": ")[-1])
+    register_C = int(data[2].split(": ")[-1])
+
+    instructions = data[3].split(": ")[-1]
+
+    for i in range(20000000):
+        print(f"Starting {i}")
+        if check_register_value(i, register_B, register_C, instructions):
+            break
+
+    return i
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/part1_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/part2_example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))

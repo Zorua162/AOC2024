@@ -5,23 +5,28 @@ current_day = "day17"
 
 
 def test_part1_example_data_output() -> None:
-    output: int = part1(f"{current_day}/part1_example_data.txt")
-    assert 0 == output
+    output = part1(f"{current_day}/example_data.txt")
+    assert "4,6,3,5,6,3,5,2,1,0" == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
 def test_part1_data_output():
     output = part1(f"{current_day}/data.txt")
-    assert "currently unknown" == output
+    assert "1,7,6,5,1,0,5,0,7" == output
 
 
-@pytest.mark.skip("Part 2 not started yet")
+def test_part1_speed(time_answer):
+    part1(f"{current_day}/data.txt")
+
+
 def test_part2_example_data_output() -> None:
-    output: int = part2(f"{current_day}/part1_example_data.txt")
-    assert 0 == output
+    output: int = part2(f"{current_day}/part2_example_data.txt")
+    assert 117440 == output
 
 
-@pytest.mark.skip("Answer is from AOC website")
+def test_part2_speed(time_answer):
+    part2(f"{current_day}/data.txt")
+
+
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
     assert "currently unknown" == output
