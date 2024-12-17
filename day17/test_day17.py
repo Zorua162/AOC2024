@@ -1,5 +1,6 @@
 from day17.day17_solution import part1, part2
-import pytest
+
+# import pytest
 
 current_day = "day17"
 
