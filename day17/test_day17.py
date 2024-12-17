@@ -4,12 +4,12 @@ import pytest
 current_day = "day17"
 
 
-def test_part1_example_data_output() -> None:
+def test_part1_example_data_output(get_days_example_data_fixture) -> None:
     output = part1(f"{current_day}/example_data.txt")
     assert "4,6,3,5,6,3,5,2,1,0" == output
 
 
-def test_part1_data_output():
+def test_part1_data_output(get_days_data_fixture):
     output = part1(f"{current_day}/data.txt")
     assert "1,7,6,5,1,0,5,0,7" == output
 
