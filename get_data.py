@@ -33,7 +33,7 @@ def get_or_cache(get_function: Callable, day_number: int, file_path: str) -> str
 
 
 def get_days_data(day_folder: str, day_number: int) -> str:
-    # Check if file already exists
+    print(f"Getting data for day {day_number}")
     file_path = f"{day_folder}/data.txt"
     return get_or_cache(get_data, day_number, file_path)
 
@@ -45,5 +45,6 @@ def get_example(day: int, year: int) -> str:
 
 
 def get_days_example_data(day_folder: str, day_number: int):
+    print(f"Getting example data for day {day_number}")
     file_path = f"{day_folder}/example_data.txt"
     return get_or_cache(get_example, day_number, file_path)

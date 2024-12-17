@@ -3,6 +3,8 @@ import shutil
 import os
 import sys
 
+from get_data import get_days_data, get_days_example_data
+
 
 def create_folder(day_number: int) -> str:
     # Copy the folder
@@ -77,9 +79,11 @@ def main():
             continue
         valid = True
     print(f"Using day number {day_number}")
-    create_folder(day_number)
+    day_folder = create_folder(day_number)
     change_file_names(day_number)
     update_file_content(day_number)
+    get_days_data(day_folder, day_number)
+    get_days_example_data(day_folder, day_number)
     print("Done! Enjoy your day")
 
 
