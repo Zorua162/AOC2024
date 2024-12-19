@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Optional
+from typing import Union
 
 
 from math import trunc
@@ -139,27 +140,149 @@ class Computer:
 
         print(f"{output_loc = } {output_xor = }")
 
-        # end_A = 0  # Must end as A = 0
-        # end_B = 0  # Unknown at end
-        # end_C = 0  # Unknown at end
+        end_A: int = 0  # Must end as A = 0
+        end_B: Union[str, int] = "unknown"  # Unknown at end
+        end_C: Union[str, int] = "unknown"  # Unknown at end
 
-        # start_A = 0  # Target to find
-        # start_B = 0  # Starts as 0
-        # start_C = 0  # Starts as 0
+        # start_A: Union[str, int] = "output"  # Target to find
+        # start_B: int = 0  # Starts as 0
+        # start_C: int = 0  # Starts as 0
 
-        for i, instruction in enumerate(reversed(self.instructions[-3:-1])):
+        A = end_A
+        B = end_B
+        C = end_C
+
+        possible_A: list[int] = []
+        possible_B: list[int] = []
+        possible_C: list[int] = []
+
+        # sorted_instructions = sort_instructions(self.instructions)
+
+        for instruction in reversed(self.instructions):
             # Solve this instruction backwards from the output point
             print(f"Looking at instruction {instruction = }")
-            if i % 2 == 0:
-                B_out_inv = instruction ^ output_xor
-                print(f"{B_out_inv = }")
+            # A = (1- 7) (1 - 2 ** 3)
+            # Try each of the 1 - 7 paths to reverse way to the set of inputs where:
+            # All the output values come out correct
+            # The B and C register start at 0
 
-                # A = (1- 7) (1 - 2 ** 3)
-                # Try each of the 1 - 7 paths to reverse way to the set of inputs where:
-                # All the output values come out correct
-                # The B and C register start at 0
+            A, B, C, possible_A, possible_B, possible_C = self.do_round(
+                instruction, A, B, C, possible_A, possible_B, possible_C
+            )
 
-        return 0
+        # Do the last output one more time to get the correct A
+        A, B, C, possible_A, possible_B, possible_C = self.do_round(
+            self.instructions[-1], A, B, C, possible_A, possible_B, possible_C
+        )
+
+        return A
+
+    def do_round(
+        self,
+        output: int,
+        A: int,
+        B: Union[int, str],
+        C: Union[int, str],
+        possible_A: list[int],
+        possible_B: list[int],
+        possible_C: list[int],
+    ) -> tuple[int, Union[int, str], Union[int, str], list[int], list[int], list[int]]:
+        # test
+
+        for i in range(len(self.instructions) - 2, -1, -2):
+            opcode = self.instructions[i]
+            operand = self.instructions[i + 1]
+
+            A, B, C, possible_A, possible_B, possible_C = self.reverse_instruction(
+                output, opcode, operand, A, B, C, possible_A, possible_B, possible_C
+            )
+
+        return A, B, C, possible_A, possible_B, possible_C
+
+    def reverse_instruction(
+        self,
+        output: int,
+        opcode: int,
+        operand: int,
+        A: int,
+        B: Union[int, str],
+        C: Union[int, str],
+        possible_A: list[int],
+        possible_B: list[int],
+        possible_C: list[int],
+    ) -> tuple[int, Union[int, str], Union[int, str], list[int], list[int], list[int]]:
+        print(f"reversing instruction {output = } {opcode = } {operand = }")
+
+        # Combo operands 0 through 3 represent literal values 0 through 3.
+        # Combo operand 4 represents the value of register A.
+        # Combo operand 5 represents the value of register B.
+        # Combo operand 6 represents the value of register C.
+        # Combo operand 7 is reserved and will not appear in valid programs.
+
+        if opcode == 0:
+            # The adv instruction (opcode 0) performs division. The numerator is the
+            # value in the A register. The denominator is found by raising 2 to the
+            # power of the instruction's combo operand. (So, an operand of 2 would
+            # divide A by 4 (2^2); an operand of 5 would divide A by 2^B.) The result
+            # of the division operation is truncated to an integer and then written
+            # to the A register.
+
+            if operand == 3:
+                # A = A / 8
+
+                possible_A = [A * 8 + i for i in range(2**operand)]
+
+                print(f"{possible_A = }")
+
+        if opcode == 4:
+            # The bxc instruction (opcode 4) calculates the bitwise XOR of register B
+            # and register C, then stores the result in register B.
+            # (For legacy reasons, this instruction reads an operand but ignores it.)
+
+            # This one will confirm for us which last 3 bits it actually is
+            pass
+
+        if opcode == 5:
+            # The out instruction (opcode 5) calculates the value of its combo operand
+            # modulo 8, then outputs that value. (If a program outputs multiple values,
+            # they are separated by commas.)
+            if operand == 5:
+                # Output is B % 8
+
+                if B == 0:
+                    B = 0
+
+            if operand == 4:
+                if possible_A == []:
+                    return A, B, C, possible_A, possible_B, possible_C
+                A = find_actual_A_from_output(possible_A, output)
+
+        return A, B, C, possible_A, possible_B, possible_C
+
+
+def sort_instructions(instructions: list[int]) -> list[int]:
+    sorted_instructions: list[int] = instructions
+    # Move the 5 to the second to last position
+    five_indexes: list[int] = []
+
+    for val in instructions:
+        if val == 0:
+            five_indexes.append(val)
+
+    for index in five_indexes:
+        five_opcode = sorted_instructions.pop(index)
+        five_operand = sorted_instructions.pop(index)
+        sorted_instructions.append(five_opcode)
+        sorted_instructions.append(five_operand)
+
+    return sorted_instructions
+
+
+def find_actual_A_from_output(possible_A: list[int], output: int) -> int:
+    for poss_A in possible_A:
+        if poss_A % 8 == output:
+            return poss_A
+    raise Exception(f"output was not found in possible_A % 8 {possible_A} {output}")
 
 
 def find_output(instructions: list[int]) -> int:
@@ -230,9 +353,9 @@ def part2(data_path: str) -> int:
 
     computer = Computer(117440, 0, 0, instructions)
 
-    computer.do_instructions()
+    # computer.do_instructions()
 
-    return 0
+    return computer.find_correct_A()
 
     # return computer.find_correct_A()
     # return computer.find_correct_A_example()
