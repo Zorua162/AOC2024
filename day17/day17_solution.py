@@ -2,6 +2,10 @@ from typing import Any
 from typing import Optional
 from typing import Union
 
+import networkx as nx  # type: ignore
+
+import matplotlib.pyplot as plt
+
 
 from math import trunc
 
@@ -233,31 +237,83 @@ class Computer:
                 possible_A = [A * 8 + i for i in range(2**operand)]
 
                 print(f"{possible_A = }")
+        if opcode == 1:
+            # Bitwise XOR is the inverse of itself (woo hoo)
+
+            B = int(B) ^ operand
+
+        if opcode == 2:
+            new_possible_B = []
+            if operand == 4:
+                for poss_A in possible_A:
+                    new_possible_B.append(poss_A % 8)
 
         if opcode == 4:
             # The bxc instruction (opcode 4) calculates the bitwise XOR of register B
             # and register C, then stores the result in register B.
             # (For legacy reasons, this instruction reads an operand but ignores it.)
 
-            # This one will confirm for us which last 3 bits it actually is
-            pass
+            possible_B = [int(B) ^ this_C for this_C in possible_C]
 
         if opcode == 5:
             # The out instruction (opcode 5) calculates the value of its combo operand
             # modulo 8, then outputs that value. (If a program outputs multiple values,
             # they are separated by commas.)
-            if operand == 5:
-                # Output is B % 8
-
-                if B == 0:
-                    B = 0
-
             if operand == 4:
                 if possible_A == []:
                     return A, B, C, possible_A, possible_B, possible_C
-                A = find_actual_A_from_output(possible_A, output)
+                A = find_actual_val_using_output(possible_A, output)
+
+            if operand == 5:
+                # Output is B % 8
+                if possible_B == []:
+                    return A, B, C, possible_A, possible_B, possible_C
+                B = find_actual_val_using_output(possible_B, output)
+
+        if opcode == 7:
+            possible_C = []
+
+            for poss_A in possible_A:
+                for poss_B in possible_B:
+                    possible_C.append(trunc(poss_A / 2**poss_B))
 
         return A, B, C, possible_A, possible_B, possible_C
+
+    def analyse_instructions(self):
+        interactions = nx.Graph()
+
+        interactions.add_node("A")
+        interactions.add_node("B")
+        interactions.add_node("C")
+
+        for i in range(0, len(self.instructions), 2):
+            opcode = self.instructions[i]
+            operand = self.instructions[i + 1]
+            print(f"{opcode = } {operand = }")
+
+            if opcode == 0:
+                if operand == 4:
+                    interactions.add_edge("A", "A")
+                elif operand == 5:
+                    interactions.add_edge("A", "B")
+                elif operand == 6:
+                    interactions.add_edge("A", "C")
+            elif opcode == 1:
+                interactions.add_edge("B", "B")
+            elif opcode == 2:
+                if operand == 4:
+                    interactions.add_edge("B", "A")
+            elif opcode == 4:
+                interactions.add_edge("B", "C")
+                interactions.add_edge("B", "B")
+            elif opcode == 6:
+                interactions.add_edge("B", "A")
+            elif opcode == 7:
+                interactions.add_edge("C", "A")
+
+        nx.draw(interactions, with_labels=True)
+        plt.show()
+        print(f"{opcode = } {operand = }")
 
 
 def sort_instructions(instructions: list[int]) -> list[int]:
@@ -278,11 +334,13 @@ def sort_instructions(instructions: list[int]) -> list[int]:
     return sorted_instructions
 
 
-def find_actual_A_from_output(possible_A: list[int], output: int) -> int:
-    for poss_A in possible_A:
-        if poss_A % 8 == output:
-            return poss_A
-    raise Exception(f"output was not found in possible_A % 8 {possible_A} {output}")
+def find_actual_val_using_output(possible_values: list[int], output: int) -> int:
+    for poss_val in possible_values:
+        if poss_val % 8 == output:
+            return poss_val
+    raise Exception(
+        f"output was not found in possible_A % 8 {possible_values} {output}"
+    )
 
 
 def find_output(instructions: list[int]) -> int:
@@ -355,6 +413,8 @@ def part2(data_path: str) -> int:
 
     # computer.do_instructions()
 
+    # computer.analyse_instructions()
+
     return computer.find_correct_A()
 
     # return computer.find_correct_A()
@@ -364,5 +424,5 @@ def part2(data_path: str) -> int:
 if __name__ == "__main__":
     # print(part1(f"{current_day}/example_data.txt"))
     # print(part1(f"{current_day}/data.txt"))
-    print(part2(f"{current_day}/part2_example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/part2_example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))
