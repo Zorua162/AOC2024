@@ -1,3 +1,4 @@
-pytest
 advent-of-code-data
 python-dotenv
+
+numpy
