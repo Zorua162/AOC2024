@@ -1,11 +1,5 @@
 from typing import Any
 from typing import Optional
-from typing import Union
-
-import networkx as nx  # type: ignore
-
-import matplotlib.pyplot as plt
-
 
 from math import trunc
 
@@ -144,18 +138,6 @@ class Computer:
 
         print(f"{output_loc = } {output_xor = }")
 
-        end_A: int = 0  # Must end as A = 0
-        end_B: Union[str, int] = "unknown"  # Unknown at end
-        end_C: Union[str, int] = "unknown"  # Unknown at end
-
-        # start_A: Union[str, int] = "output"  # Target to find
-        # start_B: int = 0  # Starts as 0
-        # start_C: int = 0  # Starts as 0
-
-        A = end_A
-        B = end_B
-        C = end_C
-
         possible_A: list[int] = []
         possible_B: list[int] = []
         possible_C: list[int] = []
@@ -170,51 +152,46 @@ class Computer:
             # All the output values come out correct
             # The B and C register start at 0
 
-            A, B, C, possible_A, possible_B, possible_C = self.do_round(
-                instruction, A, B, C, possible_A, possible_B, possible_C
+            possible_A, possible_B, possible_C = self.do_round(
+                instruction, possible_A, possible_B, possible_C
             )
 
         # Do the last output one more time to get the correct A
-        A, B, C, possible_A, possible_B, possible_C = self.do_round(
-            self.instructions[-1], A, B, C, possible_A, possible_B, possible_C
-        )
+
+        print(f"Possible A ends up as {possible_A}")
+
+        A = possible_A[0]
 
         return A
 
     def do_round(
         self,
         output: int,
-        A: int,
-        B: Union[int, str],
-        C: Union[int, str],
         possible_A: list[int],
         possible_B: list[int],
         possible_C: list[int],
-    ) -> tuple[int, Union[int, str], Union[int, str], list[int], list[int], list[int]]:
+    ) -> tuple[list[int], list[int], list[int]]:
         # test
 
         for i in range(len(self.instructions) - 2, -1, -2):
             opcode = self.instructions[i]
             operand = self.instructions[i + 1]
 
-            A, B, C, possible_A, possible_B, possible_C = self.reverse_instruction(
-                output, opcode, operand, A, B, C, possible_A, possible_B, possible_C
+            possible_A, possible_B, possible_C = self.reverse_instruction(
+                output, opcode, operand, possible_A, possible_B, possible_C
             )
 
-        return A, B, C, possible_A, possible_B, possible_C
+        return possible_A, possible_B, possible_C
 
-    def reverse_instruction(
+    def reverse_instruction(  # noqa: C901
         self,
         output: int,
         opcode: int,
         operand: int,
-        A: int,
-        B: Union[int, str],
-        C: Union[int, str],
         possible_A: list[int],
         possible_B: list[int],
         possible_C: list[int],
-    ) -> tuple[int, Union[int, str], Union[int, str], list[int], list[int], list[int]]:
+    ) -> tuple[list[int], list[int], list[int]]:
         print(f"reversing instruction {output = } {opcode = } {operand = }")
 
         # Combo operands 0 through 3 represent literal values 0 through 3.
@@ -233,87 +210,63 @@ class Computer:
 
             if operand == 3:
                 # A = A / 8
+                new_possible_A = []
 
-                possible_A = [A * 8 + i for i in range(2**operand)]
+                for poss_A in possible_A:
+                    new_possible_A.extend([poss_A * 8 + i for i in range(2**operand)])
+                possible_A = new_possible_A
 
-                print(f"{possible_A = }")
-        if opcode == 1:
+                # print(f"{possible_A = }")
+        elif opcode == 1:
             # Bitwise XOR is the inverse of itself (woo hoo)
 
-            B = int(B) ^ operand
+            possible_B = [int(B) ^ operand for B in possible_B]
 
-        if opcode == 2:
+        elif opcode == 2:
             new_possible_B = []
             if operand == 4:
                 for poss_A in possible_A:
                     new_possible_B.append(poss_A % 8)
+            possible_B = new_possible_B
 
-        if opcode == 4:
+        elif opcode == 3:
+            if possible_A == []:
+                possible_A = [0]
+
+        elif opcode == 4:
             # The bxc instruction (opcode 4) calculates the bitwise XOR of register B
             # and register C, then stores the result in register B.
             # (For legacy reasons, this instruction reads an operand but ignores it.)
+            new_possible_B = []
+            for B in possible_B:
+                new_possible_B.extend([int(B) ^ this_C for this_C in possible_C])
+            possible_B = new_possible_B
 
-            possible_B = [int(B) ^ this_C for this_C in possible_C]
-
-        if opcode == 5:
+        elif opcode == 5:
             # The out instruction (opcode 5) calculates the value of its combo operand
             # modulo 8, then outputs that value. (If a program outputs multiple values,
             # they are separated by commas.)
             if operand == 4:
                 if possible_A == []:
-                    return A, B, C, possible_A, possible_B, possible_C
-                A = find_actual_val_using_output(possible_A, output)
+                    return possible_A, possible_B, possible_C
+                # List of 1!
+                possible_A = [find_actual_val_using_output(possible_A, output)]
 
             if operand == 5:
                 # Output is B % 8
                 if possible_B == []:
-                    return A, B, C, possible_A, possible_B, possible_C
-                B = find_actual_val_using_output(possible_B, output)
+                    return possible_A, possible_B, possible_C
+                # List of 1!
+                possible_B = [find_actual_val_using_output(possible_B, output)]
 
-        if opcode == 7:
+        elif opcode == 7:
             possible_C = []
 
             for poss_A in possible_A:
                 for poss_B in possible_B:
                     possible_C.append(trunc(poss_A / 2**poss_B))
 
-        return A, B, C, possible_A, possible_B, possible_C
-
-    def analyse_instructions(self):
-        interactions = nx.Graph()
-
-        interactions.add_node("A")
-        interactions.add_node("B")
-        interactions.add_node("C")
-
-        for i in range(0, len(self.instructions), 2):
-            opcode = self.instructions[i]
-            operand = self.instructions[i + 1]
-            print(f"{opcode = } {operand = }")
-
-            if opcode == 0:
-                if operand == 4:
-                    interactions.add_edge("A", "A")
-                elif operand == 5:
-                    interactions.add_edge("A", "B")
-                elif operand == 6:
-                    interactions.add_edge("A", "C")
-            elif opcode == 1:
-                interactions.add_edge("B", "B")
-            elif opcode == 2:
-                if operand == 4:
-                    interactions.add_edge("B", "A")
-            elif opcode == 4:
-                interactions.add_edge("B", "C")
-                interactions.add_edge("B", "B")
-            elif opcode == 6:
-                interactions.add_edge("B", "A")
-            elif opcode == 7:
-                interactions.add_edge("C", "A")
-
-        nx.draw(interactions, with_labels=True)
-        plt.show()
-        print(f"{opcode = } {operand = }")
+        return possible_A, possible_B, possible_C
 
 
 def sort_instructions(instructions: list[int]) -> list[int]:
