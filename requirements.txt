@@ -2,3 +2,5 @@ advent-of-code-data
 python-dotenv
 
 numpy
+
+typing-extensions
