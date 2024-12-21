@@ -1,7 +1,3 @@
 pytest
 advent-of-code-data
 python-dotenv
-
-networkx
-matplotlib
-PyQt6
