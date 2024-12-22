@@ -13,6 +13,10 @@ def test_part1_data_output(get_days_data_fixture):
     assert 310 == output
 
 
+def test_time_part1():
+    part1(f"{current_day}/data.txt")
+
+
 def test_part2_example_data_output() -> None:
     output = part2(f"{current_day}/example_data.txt")
     assert "6,1" == output
@@ -21,3 +25,7 @@ def test_part2_example_data_output() -> None:
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
     assert "16,46" == output
+
+
+def test_time_part2():
+    part2(f"{current_day}/data.txt")
