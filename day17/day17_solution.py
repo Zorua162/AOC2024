@@ -138,6 +138,8 @@ class Computer:
 
         print(f"{output_loc = } {output_xor = }")
 
+        # possible: list[list[int]] = []
+
         possible_A: list[int] = []
         possible_B: list[int] = []
         possible_C: list[int] = []
