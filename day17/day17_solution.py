@@ -138,11 +138,7 @@ class Computer:
 
         print(f"{output_loc = } {output_xor = }")
 
-        # possible: list[list[int]] = []
-
-        possible_A: list[int] = []
-        possible_B: list[int] = []
-        possible_C: list[int] = []
+        possible: list[list[int]] = []
 
         # sorted_instructions = sort_instructions(self.instructions)
 
@@ -154,46 +150,42 @@ class Computer:
             # All the output values come out correct
             # The B and C register start at 0
 
-            possible_A, possible_B, possible_C = self.do_round(
-                instruction, possible_A, possible_B, possible_C
+            possible = self.do_round(
+                instruction, possible
             )
 
         # Do the last output one more time to get the correct A
 
-        print(f"Possible A ends up as {possible_A}")
+        print(f"Possible ends up as {possible}")
 
-        A = possible_A[0]
+        A = possible[0][0]
 
         return A
 
     def do_round(
         self,
         output: int,
-        possible_A: list[int],
-        possible_B: list[int],
-        possible_C: list[int],
-    ) -> tuple[list[int], list[int], list[int]]:
+        possible: list[list[int]],
+    ) -> list[list[int]]:
         # test
 
         for i in range(len(self.instructions) - 2, -1, -2):
             opcode = self.instructions[i]
             operand = self.instructions[i + 1]
 
-            possible_A, possible_B, possible_C = self.reverse_instruction(
-                output, opcode, operand, possible_A, possible_B, possible_C
+            possible = self.reverse_instruction(
+                output, opcode, operand, possible
             )
 
-        return possible_A, possible_B, possible_C
+        return possible
 
     def reverse_instruction(  # noqa: C901
         self,
         output: int,
         opcode: int,
         operand: int,
-        possible_A: list[int],
-        possible_B: list[int],
-        possible_C: list[int],
-    ) -> tuple[list[int], list[int], list[int]]:
+        possible: list[list[int]],
+    ) -> list[list[int]]:
         print(f"reversing instruction {output = } {opcode = } {operand = }")
 
         # Combo operands 0 through 3 represent literal values 0 through 3.
