@@ -2,5 +2,6 @@ advent-of-code-data
 python-dotenv
 
 numpy
+networkx
 
 typing-extensions
