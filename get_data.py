@@ -35,12 +35,14 @@ def get_or_cache(get_function: Callable, day_number: int, file_path: str) -> str
 def get_days_data(day_folder: str, day_number: int) -> str:
     print(f"Getting data for day {day_number}")
     file_path = f"{day_folder}/data.txt"
-    return get_or_cache(get_data, day_number, file_path)
+    data = get_data
+    print(f"{data = }")
+    return get_or_cache(data, day_number, file_path)
 
 
 def get_example(day: int, year: int) -> str:
     puzzle_data = get_puzzle(getenv("AOC_SESSION"), day=day, year=year)._get_examples()
-    print(puzzle_data)
+    print(f"{puzzle_data = }")
     return puzzle_data[0].input_data
 
 
