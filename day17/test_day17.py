@@ -1,6 +1,5 @@
 from day17.day17_solution import part1, part2
-
-# import pytest
+import pytest
 
 current_day = "day17"
 
@@ -28,6 +27,8 @@ def test_part2_speed(time_answer):
     part2(f"{current_day}/data.txt")
 
 
+@pytest.mark.skip("currently stuck on ths")
 def test_part2_data_output():
     output = part2(f"{current_day}/data.txt")
+    assert 130647579931408 != output
     assert "currently unknown" == output

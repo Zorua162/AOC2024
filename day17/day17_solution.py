@@ -116,7 +116,7 @@ class Computer:
 
     def find_correct_A(self) -> int:
         # Example
-        # 0,3 A=A/6
+        # 0,3 A=A/8
         # 5,4 A%8>
         # 3,0 A!=0;p=0
 
@@ -132,12 +132,6 @@ class Computer:
 
         # [f"{x ^ 5:04b}" for x in range(8)]
 
-        output_loc = find_output(self.instructions)
-
-        output_xor = self.instructions[output_loc + 1]
-
-        print(f"{output_loc = } {output_xor = }")
-
         possible: list[list[int]] = []
 
         # sorted_instructions = sort_instructions(self.instructions)
@@ -150,15 +144,11 @@ class Computer:
             # All the output values come out correct
             # The B and C register start at 0
 
-            possible = self.do_round(
-                instruction, possible
-            )
-
-        # Do the last output one more time to get the correct A
+            possible = self.do_round(instruction, possible)
 
         print(f"Possible ends up as {possible}")
 
-        A = possible[0][0]
+        A = get_start_A(possible)
 
         return A
 
@@ -173,9 +163,7 @@ class Computer:
             opcode = self.instructions[i]
             operand = self.instructions[i + 1]
 
-            possible = self.reverse_instruction(
-                output, opcode, operand, possible
-            )
+            possible = self.reverse_instruction(output, opcode, operand, possible)
 
         return possible
 
@@ -186,7 +174,9 @@ class Computer:
         operand: int,
         possible: list[list[int]],
     ) -> list[list[int]]:
-        print(f"reversing instruction {output = } {opcode = } {operand = }")
+        print(
+            f"reversing instruction {output = } {opcode = } {operand = } {possible = }"
+        )
 
         # Combo operands 0 through 3 represent literal values 0 through 3.
         # Combo operand 4 represents the value of register A.
@@ -204,63 +194,96 @@ class Computer:
 
             if operand == 3:
                 # A = A / 8
-                new_possible_A = []
+                new_possible = []
 
-                for poss_A in possible_A:
-                    new_possible_A.extend([poss_A * 8 + i for i in range(2**operand)])
-                possible_A = new_possible_A
+                for possible_A, possible_B, possible_C in possible:
+                    new_possible_A = [possible_A * 8 + i for i in range(2**operand)]
+
+                    new_possible.extend(
+                        [[poss_A, possible_B, possible_C] for poss_A in new_possible_A]
+                    )
+
+                possible = new_possible
 
                 # print(f"{possible_A = }")
         elif opcode == 1:
             # Bitwise XOR is the inverse of itself (woo hoo)
-
-            possible_B = [int(B) ^ operand for B in possible_B]
+            possible = [
+                [possible_A, possible_B ^ operand, possible_C]
+                for possible_A, possible_B, possible_C in possible
+            ]
 
         elif opcode == 2:
-            new_possible_B = []
+            new_possible = []
             if operand == 4:
-                for poss_A in possible_A:
-                    new_possible_B.append(poss_A % 8)
-            possible_B = new_possible_B
+                for possible_A, possible_B, possible_C in possible:
+                    new_possible.append([possible_A, possible_A % 8, possible_C])
+            possible = new_possible
 
         elif opcode == 3:
-            if possible_A == []:
-                possible_A = [0]
+            if possible == []:
+                possible = [[0, 0, 0]]  # TODO: These values of B and C are not correct
 
         elif opcode == 4:
             # The bxc instruction (opcode 4) calculates the bitwise XOR of register B
             # and register C, then stores the result in register B.
             # (For legacy reasons, this instruction reads an operand but ignores it.)
-            new_possible_B = []
-            for B in possible_B:
-                new_possible_B.extend([int(B) ^ this_C for this_C in possible_C])
-            possible_B = new_possible_B
+            new_possible = []
+
+            for possible_A, possible_B, possible_C in possible:
+                new_possible.append([possible_A, possible_B ^ possible_C, possible_C])
+
+            possible = new_possible
 
         elif opcode == 5:
             # The out instruction (opcode 5) calculates the value of its combo operand
             # modulo 8, then outputs that value. (If a program outputs multiple values,
             # they are separated by commas.)
-            if operand == 4:
-                if possible_A == []:
-                    return possible_A, possible_B, possible_C
-                # List of 1!
-                possible_A = [find_actual_val_using_output(possible_A, output)]
 
-            if operand == 5:
-                # Output is B % 8
-                if possible_B == []:
-                    return possible_A, possible_B, possible_C
-                # List of 1!
-                possible_B = [find_actual_val_using_output(possible_B, output)]
+            possible = find_actual_val_using_output(possible, output, operand)
 
         elif opcode == 7:
-            possible_C = []
+            new_possible = []
 
-            for poss_A in possible_A:
-                for poss_B in possible_B:
-                    possible_C.append(trunc(poss_A / 2**poss_B))
+            # TODO: Need to check whether values are being lost here due to the trunc.
+            # If they are being lost then we need to expand out those values into the
+            # possible values
+            for possible_A, possible_B, possible_C in possible:
+                div_val = 2**possible_B
 
-        return possible_A, possible_B, possible_C
+                for i in range(possible_C, possible_C + div_val):
+                    new_possible.append(
+                        [possible_C * div_val + i, possible_B, possible_C]
+                    )
+
+            # Working example from opcode == 0
+            # possible = new_possible
+
+            # for possible_A, possible_B, possible_C in possible:
+
+            #     new_possible_A = [possible_A * 8 + i for i in range(2**operand)]
+
+            #     new_possible.extend(
+            #         [[poss_A, possible_B, possible_C] for poss_A in new_possible_A]
+            #     )
+
+            # possible = new_possible
+
+            # for poss_A in possible_A:
+            #     for poss_B in possible_B:
+            #         possible_C.append(trunc(poss_A / 2**poss_B))
+
+        return possible
+
+
+def get_start_A(possible: list[list[int]]) -> int:
+    for A, B, C in possible:
+        if B == 0 and C == 0:
+            return A
+
+    raise Exception(
+        "A valid value of A was not found in the possible values " f"{possible}"
+    )
 
 
 def sort_instructions(instructions: list[int]) -> list[int]:
@@ -281,12 +304,20 @@ def sort_instructions(instructions: list[int]) -> list[int]:
     return sorted_instructions
 
 
-def find_actual_val_using_output(possible_values: list[int], output: int) -> int:
-    for poss_val in possible_values:
-        if poss_val % 8 == output:
-            return poss_val
+def find_actual_val_using_output(
+    possible: list[list[int]], output: int, operand: int
+) -> list[list[int]]:
+    check_index = 0
+    if operand == 4:
+        check_index = 0
+    elif operand == 5:
+        check_index = 1
+
+    for values in possible:
+        if values[check_index] % 8 == output:
+            return [values]
     raise Exception(
-        f"output was not found in possible_A % 8 {possible_values} {output}"
+        f"output was not found in possible_A % 8 {possible = } {output = } {operand = }"
     )
 
 
@@ -362,10 +393,18 @@ def part2(data_path: str) -> int:
 
     # computer.analyse_instructions()
 
-    return computer.find_correct_A()
+    found_A = computer.find_correct_A()
+
+    correct_computer = Computer(found_A + 7, 0, 0, instructions)
+
+    output = correct_computer.do_instructions()
 
     # return computer.find_correct_A()
     # return computer.find_correct_A_example()
+
+    print(f"{output = }")
+
+    return found_A
 
 
 if __name__ == "__main__":
@@ -373,3 +412,6 @@ if __name__ == "__main__":
     # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/part2_example_data.txt"))
     print(part2(f"{current_day}/data.txt"))
+
+
+# 130647579931408 Too low
