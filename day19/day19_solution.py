@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Optional
+import re
 
 current_day = "day19"
 
@@ -90,15 +91,67 @@ def part1(data_path: str) -> int:
     return possible_count
 
 
+def check_not_filled(filled: list[int], span: tuple[int, int]) -> bool:
+    for i in range(span[0], span[1]):
+        if filled[i] != 0:
+            return False
+    return True
+
+
+def fill(filled: list[int], span: tuple[int, int]) -> list[int]:
+    for i in range(span[0], span[1]):
+        filled[i] = 1
+    return filled
+
+
+def check_fills(
+    target_pattern: str, locations: dict[int, list], check_order: list[str]
+) -> bool:
+    filled = [0 for _ in target_pattern]
+    for pattern in check_order:
+        for span in locations[pattern]:
+            if check_not_filled(filled, span.span()):
+                filled = fill(filled, span.span())
+            print(span, span.span(), filled)
+            if all([i == 1 for i in filled]):
+                return True
+    return False
+
+
+def find_count(target_pattern: str, possible_towels: list[str]) -> int:
+    locations = {}
+    spans: list[re.Match] = []
+    for towel in possible_towels:
+        matches = list(re.finditer(towel, target_pattern, re.MULTILINE))
+        if len(matches) > 0:
+            locations[towel] = list(matches)
+        spans.extend(matches)
+
+    check_order = sorted(locations.keys(), key=len, reverse=True)
+    fills = set()
+    for _ in range(len(locations.keys())):
+        fills.add(get_fill(target_pattern, locations, check_order))
+
+    return len(fills)
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
-    print_grid(data)
-    return 0
+
+    possible_towels = data[0].split(", ")
+
+    patterns = data[1:]
+
+    possible_count = 0
+
+    for pattern in [patterns[0]]:
+        possible_count += find_count(pattern, possible_towels)
+    return possible_count
 
 
 if __name__ == "__main__":
     # print(part1(f"{current_day}/example_data.txt"))
-    print(part1(f"{current_day}/data.txt"))
-    # print(part2(f"{current_day}/example_data.txt"))
+    # print(part1(f"{current_day}/data.txt"))
+    print(part2(f"{current_day}/example_data.txt"))
     # print(part2(f"{current_day}/data.txt"))
