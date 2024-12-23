@@ -104,22 +104,26 @@ def fill(filled: list[int], span: tuple[int, int]) -> list[int]:
     return filled
 
 
-def check_fills(
-    target_pattern: str, locations: dict[int, list], check_order: list[str]
-) -> bool:
+def get_fill(
+    target_pattern: str,
+    locations: dict[str, list[re.Match[str]]],
+    check_order: list[str],
+) -> Optional[list[str]]:
     filled = [0 for _ in target_pattern]
+    fill_content = []
     for pattern in check_order:
         for span in locations[pattern]:
             if check_not_filled(filled, span.span()):
                 filled = fill(filled, span.span())
+                fill_content.append(span.group())
             print(span, span.span(), filled)
             if all([i == 1 for i in filled]):
-                return True
-    return False
+                return fill_content
+    return None
 
 
 def find_count(target_pattern: str, possible_towels: list[str]) -> int:
-    locations = {}
+    locations: dict[str, list[re.Match[str]]] = {}
     spans: list[re.Match] = []
     for towel in possible_towels:
         matches = list(re.finditer(towel, target_pattern, re.MULTILINE))
@@ -128,9 +132,11 @@ def find_count(target_pattern: str, possible_towels: list[str]) -> int:
         spans.extend(matches)
 
     check_order = sorted(locations.keys(), key=len, reverse=True)
-    fills = set()
+    fills = []
     for _ in range(len(locations.keys())):
-        fills.add(get_fill(target_pattern, locations, check_order))
+        fill = get_fill(target_pattern, locations, check_order)
+        if fill is not None:
+            fills.append(fill)
 
     return len(fills)
 
