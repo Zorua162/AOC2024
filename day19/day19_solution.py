@@ -4,7 +4,6 @@ from typing import Any
 from typing import Optional
 import re
 
-from itertools import groupby
 from collections import defaultdict
 
 
@@ -97,90 +96,6 @@ def part1(data_path: str) -> int:
     return possible_count
 
 
-def check_not_filled(filled: list[int], span: tuple[int, int]) -> bool:
-    for i in range(span[0], span[1]):
-        if filled[i] != 0:
-            return False
-    return True
-
-
-def fill(
-    target_pattern: str, filled: list[int], match: re.Match[str]
-) -> tuple[list[int], bool]:
-    pre_filled = filled.copy()
-    span = match.span()
-    match_val = match.group()
-    for i, val in enumerate(match_val):
-        loc = span[0] + i
-        # print(f"{target_pattern = } {match_val = } {loc = } {filled = } ")
-        if filled[loc] == 1 or target_pattern[loc] != val:
-            return pre_filled, False
-        filled[loc] = 1
-    # print(f"Valid fill {filled}")
-    return filled, True
-
-
-class FillContent:
-    spans: list[re.Match[str]]
-
-    def __init__(self):
-        self.spans = []
-
-    def append(self, span: re.Match[str]):
-        self.spans.append(span)
-
-    def __eq__(self, comp: object) -> bool:
-        if not isinstance(comp, FillContent):
-            return False
-        self_str = self.full_str()
-        comp_str = comp.full_str()
-        # print(f"{self_str = }\n{comp_str = }")
-        return self_str == comp_str
-
-    def full_str(self):
-        return "".join(sorted([f"{span.span()}{span.group()}" for span in self.spans]))
-
-    def short_str(self):
-        return re.sub(r"\(\d, \d\)", "", self.full_str(), 0)
-
-    def __repr__(self):
-        return f"({self.full_str()})"
-
-    # def __lt__(self, comp) -> bool:
-
-
-def get_fill(
-    target_pattern: str,
-    locations: dict[str, list[re.Match[str]]],
-    check_order: list[str],
-) -> Optional[FillContent]:
-    filled = [0 for _ in target_pattern]
-    fill_content = FillContent()
-    for pattern in check_order:
-        for span in locations[pattern]:
-            if check_not_filled(filled, span.span()):
-                filled, include = fill(target_pattern, filled, span)
-                if include:
-                    # print(f"Including {span}")
-                    fill_content.append(span)
-            # print(f"{span = }, {span.span() = }, {filled = }")
-            if all([i == 1 for i in filled]):
-                # print(f"{fill_content = }")
-                return fill_content
-    return None
-
-
-def remove_duplicates(fills: list[FillContent]) -> list[FillContent]:
-    # fills = [sorted(fill) for fill in fills]
-
-    # print(f"pre-duplicate removal {len(fills) = } {fills = }")
-
-    fills = list(fills for fills, _ in groupby(fills))
-    # print(f"post-duplicate removal {len(fills) = } {fills = }")
-
-    return fills
-
-
 def check_valid(
     target_pattern: str, current_index: int, current_valid: re.Match[str]
 ) -> bool:
@@ -198,7 +113,7 @@ def search_valid_fills(
 ) -> int:
     current_valid_locs = start_location_dict[current_index]
 
-    print(f"{current_valid_locs = } {current_index = }")
+    # print(f"{current_valid_locs = } {current_index = } {len(target_pattern) = }")
 
     if current_index == len(target_pattern):
         return 1
@@ -238,6 +153,11 @@ def find_count(target_pattern: str, possible_towels: list[str]) -> int:
     return valid_patterns
 
 
+def stack_towels(possible_towels: list[str]):
+    for towel in possible_towels:
+        print(towel)
+
+
 def part2(data_path: str) -> int:
     with open(data_path, "r") as f_obj:
         data = [line for line in f_obj.read().split("\n") if line != ""]
@@ -248,9 +168,12 @@ def part2(data_path: str) -> int:
 
     possible_count = 0
 
+    stack_towels(possible_towels)
+
     for pattern in patterns:
         print(f"Starting pattern {pattern}")
         possible_count += find_count(pattern, possible_towels)
+
     return possible_count
 
 
