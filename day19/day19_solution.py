@@ -182,3 +182,16 @@ if __name__ == "__main__":
     # print(part1(f"{current_day}/data.txt"))
     # print(part2(f"{current_day}/example_data.txt"))
     print(part2(f"{current_day}/data.txt"))
+
+
+#     r, rb, g, br
+#     r, r, b, g, br
+
+#     r, rb, gb, r
+#     r, rb, g, b, r
+#     r, r, b, g, b, r
+#     r, r, b, gb, r
+
+# Find the largest which go in
+# Split down each of the larger parts down into their components
+# Use the count of each, rather than needing to loop through each
