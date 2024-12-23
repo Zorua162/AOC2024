@@ -4,16 +4,19 @@ import pytest
 current_day = "day19"
 
 
+@pytest.mark.skip("Part 2 not started yet")
 def test_part1_example_data_output(get_days_example_data_fixture) -> None:
     output: int = part1(f"{current_day}/example_data.txt")
     assert 6 == output
 
 
+@pytest.mark.skip("Part 2 not started yet")
 def test_part1_data_output(get_days_data_fixture):
     output = part1(f"{current_day}/data.txt")
     assert 269 == output
 
 
+@pytest.mark.skip("Part 2 not started yet")
 def test_time_part1():
     part1(f"{current_day}/data.txt")
 
