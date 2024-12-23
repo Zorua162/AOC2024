@@ -5,6 +5,7 @@ from typing import Optional
 import re
 
 from itertools import groupby
+from collections import defaultdict
 
 
 current_day = "day19"
@@ -180,35 +181,61 @@ def remove_duplicates(fills: list[FillContent]) -> list[FillContent]:
     return fills
 
 
+def check_valid(
+    target_pattern: str, current_index: int, current_valid: re.Match[str]
+) -> bool:
+    current_group = current_valid.group()
+    for i in range(0, len(current_group)):
+        if target_pattern[current_index + i] != current_group[i]:
+            return False
+    return True
+
+
+def search_valid_fills(
+    start_location_dict: dict[int, list],
+    target_pattern: str,
+    current_index: int,
+) -> int:
+    current_valid_locs = start_location_dict[current_index]
+
+    print(f"{current_valid_locs = } {current_index = }")
+
+    if current_index == len(target_pattern):
+        return 1
+
+    valid_patterns = 0
+
+    for current_valid in current_valid_locs:
+        # if current valid doesn't match with pattern then return valid patterns
+        if not check_valid(target_pattern, current_index, current_valid):
+            return valid_patterns
+
+        # otherwise start searching next with moved index to new location based on
+        # currently valid towel pattern
+
+        valid_patterns += search_valid_fills(
+            start_location_dict,
+            target_pattern,
+            current_index + len(current_valid.group()),
+        )
+
+    # Return only valid found
+    return valid_patterns
+
+
 def find_count(target_pattern: str, possible_towels: list[str]) -> int:
-    locations: dict[str, list[re.Match[str]]] = {}
-    spans: list[re.Match] = []
+    start_location_dict: dict[int, list] = defaultdict(lambda: [])
 
     # Get all the patterns and their locations in the target pattern
     for towel in possible_towels:
         matches = list(re.finditer(towel, target_pattern, re.MULTILINE))
-        if len(matches) > 0:
-            locations[towel] = list(matches)
-        spans.extend(matches)
 
-    # Try each order of these possible spans to figure out which are valid
-    span_values: list[str] = [span.group() for span in spans]
-    check_order = sorted(span_values, key=len, reverse=True)
-    fills: list[FillContent] = []
-    for _ in range(len(spans)):
-        fill = get_fill(target_pattern, locations, check_order)
-        if fill is not None:
-            fills.append(fill)
-            pass
-        order_end = check_order.pop()
-        check_order.insert(0, order_end)
-        print(f"{check_order = }")
+        for match in matches:
+            start_location_dict[match.span()[0]].append(match)
 
-    fills = remove_duplicates(fills)
-    for fill in fills:
-        print(f"{fill.short_str()} {fill.full_str()}")
+    valid_patterns = search_valid_fills(start_location_dict, target_pattern, 0)
 
-    return len(fills)
+    return valid_patterns
 
 
 def part2(data_path: str) -> int:
@@ -221,7 +248,8 @@ def part2(data_path: str) -> int:
 
     possible_count = 0
 
-    for pattern in [patterns[3]]:
+    for pattern in patterns:
+        print(f"Starting pattern {pattern}")
         possible_count += find_count(pattern, possible_towels)
     return possible_count
 
@@ -229,5 +257,5 @@ def part2(data_path: str) -> int:
 if __name__ == "__main__":
     # print(part1(f"{current_day}/example_data.txt"))
     # print(part1(f"{current_day}/data.txt"))
-    print(part2(f"{current_day}/example_data.txt"))
-    # print(part2(f"{current_day}/data.txt"))
+    # print(part2(f"{current_day}/example_data.txt"))
+    print(part2(f"{current_day}/data.txt"))
