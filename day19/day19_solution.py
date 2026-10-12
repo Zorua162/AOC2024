@@ -6,7 +6,6 @@ import re
 
 from collections import defaultdict
 
-
 current_day = "day19"
 
 

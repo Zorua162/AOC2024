@@ -4,7 +4,6 @@ from typing import Any
 from typing import Optional
 from typing import Union
 
-
 current_day = "day15"
 
 move_dict: dict[str, tuple[int, int]] = {
